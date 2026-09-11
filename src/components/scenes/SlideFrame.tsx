@@ -32,7 +32,7 @@ export function SlideFrame({
   children: ReactNode
 }) {
   return (
-    <div className="relative h-full w-full overflow-hidden bg-white">
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-white">
       {chevron === 'right' ? <SidePanel /> : null}
       <DotsCorner />
 
@@ -43,27 +43,27 @@ export function SlideFrame({
           alt="DGCL Digital Cloud Academy"
           width={520}
           height={220}
-          className="h-6 w-auto sm:h-7"
+          className="h-7 w-auto"
           priority
         />
         <span aria-hidden className="h-4 w-px bg-line" />
-        <span className="font-display text-[clamp(0.62rem,1.1vw,0.88rem)] font-semibold text-blue-deep">
+        <span className="font-display text-[clamp(0.62rem,1.54cqw,0.88rem)] font-semibold text-blue-deep">
           {sectionLabel}
         </span>
         <span className="ml-auto h-0.5 w-16 bg-gradient-to-r from-transparent via-gold to-gold" />
       </div>
 
       <div
-        className={`slide-scale relative flex h-[calc(100%-36px)] flex-col px-[6%] pb-[4%] pt-[3%] ${
+        className={`relative flex min-h-0 flex-1 flex-col px-[6%] pb-[4%] pt-[3%] ${
           chevron === 'right' ? 'pr-[13%]' : ''
         }`}
       >
         {eyebrow ? (
-          <p className="mb-1 font-display text-[clamp(0.58rem,0.95vw,0.75rem)] font-semibold uppercase tracking-[0.16em] text-gold">
+          <p className="mb-1 font-display text-[clamp(0.58rem,1.33cqw,0.75rem)] font-semibold uppercase tracking-[0.16em] text-gold">
             {eyebrow}
           </p>
         ) : null}
-        <h1 className="font-display text-[clamp(0.9rem,2.4vw,1.75rem)] font-extrabold leading-[1.1] tracking-tight text-blue-deep">
+        <h1 className="font-display text-[clamp(0.9rem,3.36cqw,1.75rem)] font-extrabold leading-[1.1] tracking-tight text-blue-deep">
           {title}
           {titleAccent ? (
             <>

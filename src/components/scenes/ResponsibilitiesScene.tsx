@@ -34,7 +34,7 @@ export function ResponsibilitiesScene({ shown, activeModel = 0, compact }: Scene
       <div className="mt-2 grid flex-1 grid-cols-[0.9fr_1fr] gap-5">
         <div className="flex flex-col">
           {shown('intro') ? (
-            <p className="anim-rise text-[clamp(0.7rem,1.1vw,0.9rem)] leading-relaxed text-ink/65">
+            <p className="anim-rise text-[clamp(0.7rem,1.54cqw,0.9rem)] leading-relaxed text-ink/65">
               The textbook prints four separate columns. Really it is one stack and one moving line.
             </p>
           ) : null}
@@ -44,7 +44,7 @@ export function ResponsibilitiesScene({ shown, activeModel = 0, compact }: Scene
               <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-blue-electric">
                 {MODEL_NAMES[activeModel]}
               </p>
-              <p className="mt-1 font-display text-[clamp(1rem,2.2vw,1.6rem)] font-extrabold leading-none text-blue-deep">
+              <p className="mt-1 font-display text-[clamp(1rem,3.08cqw,1.6rem)] font-extrabold leading-none text-blue-deep">
                 {yours}
                 <span className="text-ink/35"> of {LAYERS.length}</span>
               </p>
@@ -54,7 +54,7 @@ export function ResponsibilitiesScene({ shown, activeModel = 0, compact }: Scene
 
           {shown('caveat') ? (
             <div className="anim-rise mt-auto border-l-[3px] border-gold pl-3">
-              <p className="text-[clamp(0.62rem,0.95vw,0.78rem)] leading-relaxed text-ink/70">
+              <p className="text-[clamp(0.62rem,1.33cqw,0.78rem)] leading-relaxed text-ink/70">
                 Even at the top, your <strong className="text-blue-deep">data</strong> and{' '}
                 <strong className="text-blue-deep">access controls</strong> are still yours. Misconfigured access is the most common cloud breach there is.
               </p>
@@ -98,7 +98,7 @@ function Stack({
               </div>
             ) : null}
             <div
-              className={`flex items-center justify-between rounded px-2.5 py-[0.5vh] text-[clamp(0.58rem,0.95vw,0.8rem)] font-semibold transition-colors duration-500 ${
+              className={`flex items-center justify-between rounded px-2.5 py-[3px] text-[clamp(0.58rem,1.33cqw,0.8rem)] font-semibold transition-colors duration-500 ${
                 customerManaged
                   ? 'bg-blue-deep text-white'
                   : 'bg-slate text-ink/45 ring-1 ring-inset ring-line'

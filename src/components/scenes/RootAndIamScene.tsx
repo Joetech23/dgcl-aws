@@ -70,7 +70,7 @@ export function RootAndIamScene({ shown, compact }: SceneProps) {
       </div>
 
       {shown('summary') ? (
-        <p className="anim-rise mt-3 border-l-[3px] border-gold pl-3 text-[clamp(0.66rem,1vw,0.82rem)] leading-relaxed text-ink/70">
+        <p className="anim-rise mt-3 border-l-[3px] border-gold pl-3 text-[clamp(0.66rem,1.4cqw,0.82rem)] leading-relaxed text-ink/70">
           <strong className="text-blue-deep">Root once</strong>. IAM for the people you
           employ. Federated for the people you trust to sign in elsewhere.
         </p>
@@ -104,12 +104,12 @@ function UserRow({ u, visible }: { u: User; visible: boolean }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <h3 className="font-display text-[clamp(0.8rem,1.25vw,1rem)] font-bold" style={{ color: u.tint }}>
+          <h3 className="font-display text-[clamp(0.8rem,1.75cqw,1rem)] font-bold" style={{ color: u.tint }}>
             {u.label}
           </h3>
           <span className="font-mono text-[9.5px] text-ink/50">{u.subtitle}</span>
         </div>
-        <p className="mt-0.5 text-[clamp(0.62rem,0.9vw,0.75rem)] leading-snug text-ink/65">
+        <p className="mt-0.5 text-[clamp(0.62rem,1.26cqw,0.75rem)] leading-snug text-ink/65">
           {u.body}
         </p>
       </div>

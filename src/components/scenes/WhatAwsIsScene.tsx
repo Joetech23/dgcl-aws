@@ -16,21 +16,21 @@ export function WhatAwsIsScene({ shown, compact }: SceneProps) {
       <div className="mt-2 grid flex-1 grid-cols-[1fr_0.85fr] gap-6">
         <div>
           {shown('name') ? (
-            <p className="anim-rise text-[clamp(0.7rem,1.15vw,0.95rem)] leading-relaxed text-ink/75">
+            <p className="anim-rise text-[clamp(0.7rem,1.61cqw,0.95rem)] leading-relaxed text-ink/75">
               <strong className="text-blue-deep">AWS</strong>, short for Amazon Web
               Services, is Amazon’s cloud platform.
             </p>
           ) : null}
 
           {shown('what') ? (
-            <p className="anim-rise mt-3 text-[clamp(0.7rem,1.1vw,0.9rem)] leading-relaxed text-ink/70">
+            <p className="anim-rise mt-3 text-[clamp(0.7rem,1.54cqw,0.9rem)] leading-relaxed text-ink/70">
               It gives you computing power, storage, databases, and machine learning tools,
               all delivered over the internet and rented by the minute.
             </p>
           ) : null}
 
           {shown('why') ? (
-            <p className="anim-rise mt-3 text-[clamp(0.7rem,1.1vw,0.9rem)] leading-relaxed text-ink/70">
+            <p className="anim-rise mt-3 text-[clamp(0.7rem,1.54cqw,0.9rem)] leading-relaxed text-ink/70">
               You can run applications, hold data, and change the size of your resources
               without buying a single piece of hardware.
             </p>
@@ -53,7 +53,7 @@ export function WhatAwsIsScene({ shown, compact }: SceneProps) {
                   }}
                 >
                   <span
-                    className="font-display text-[clamp(0.7rem,1.15vw,0.95rem)] font-bold"
+                    className="font-display text-[clamp(0.7rem,1.61cqw,0.95rem)] font-bold"
                     style={{ color: tint }}
                   >
                     {label}

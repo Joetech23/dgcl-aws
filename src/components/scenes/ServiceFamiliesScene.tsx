@@ -76,12 +76,12 @@ export function ServiceFamiliesScene({ shown, compact }: SceneProps) {
       titleAccent="four families"
      compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[70%] text-[clamp(0.68rem,1.05vw,0.88rem)] leading-relaxed text-ink/60">
+        <p className="anim-rise mt-1 max-w-[70%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/60">
           Two hundred services sounds a lot. Almost all of them are one of these four.
         </p>
       ) : null}
 
-      <div className="mt-4 grid grid-cols-2 items-start gap-3 lg:grid-cols-4">
+      <div className="mt-4 grid grid-cols-4 items-start gap-3">
         {FAMILIES.map((f, i) => (
           <div key={f.id}>
             {shown(f.id) ? (
@@ -106,7 +106,7 @@ export function ServiceFamiliesScene({ shown, compact }: SceneProps) {
                       0{i + 1}
                     </p>
                     <h3
-                      className="font-display text-[clamp(0.8rem,1.3vw,1.05rem)] font-bold leading-tight"
+                      className="font-display text-[clamp(0.8rem,1.82cqw,1.05rem)] font-bold leading-tight"
                       style={{ color: f.tint }}
                     >
                       {f.label}

@@ -76,12 +76,12 @@ export function KeyFeaturesScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="Key Features of AWS" titleAccent="Cloud Computing" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[75%] text-[clamp(0.68rem,1.05vw,0.88rem)] leading-relaxed text-ink/60">
+        <p className="anim-rise mt-1 max-w-[75%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/60">
           Four ideas that come up in almost every AWS conversation.
         </p>
       ) : null}
 
-      <div className="mt-4 grid flex-1 grid-cols-1 gap-2.5 sm:grid-cols-2">
+      <div className="mt-4 grid flex-1 grid-cols-2 content-start gap-2.5">
         {FEATURES.map((f) => (
           <div key={f.id} className="min-h-0">
             {shown(f.id) ? (
@@ -96,11 +96,11 @@ export function KeyFeaturesScene({ shown, compact }: SceneProps) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
                     <span className="font-mono text-[10.5px] font-semibold text-gold">{f.n}</span>
-                    <h3 className="font-display text-[clamp(0.85rem,1.35vw,1.05rem)] font-bold text-blue-deep">
+                    <h3 className="font-display text-[clamp(0.85rem,1.89cqw,1.05rem)] font-bold text-blue-deep">
                       {f.label}
                     </h3>
                   </div>
-                  <p className="mt-0.5 text-[clamp(0.65rem,0.95vw,0.8rem)] leading-snug text-ink/65">
+                  <p className="mt-0.5 text-[clamp(0.65rem,1.33cqw,0.8rem)] leading-snug text-ink/65">
                     {f.line}
                   </p>
                 </div>

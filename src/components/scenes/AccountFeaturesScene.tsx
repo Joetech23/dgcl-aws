@@ -12,7 +12,7 @@ export function AccountFeaturesScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="AWS Account" titleAccent="Features" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.68rem,1.05vw,0.88rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/65">
           Two features you should be able to recite.
         </p>
       ) : null}
@@ -35,7 +35,7 @@ export function AccountFeaturesScene({ shown, compact }: SceneProps) {
       </div>
 
       {shown('together') ? (
-        <p className="anim-rise mt-3 border-l-[3px] border-gold pl-3 text-[clamp(0.65rem,0.95vw,0.8rem)] leading-relaxed text-ink/70">
+        <p className="anim-rise mt-3 border-l-[3px] border-gold pl-3 text-[clamp(0.65rem,1.33cqw,0.8rem)] leading-relaxed text-ink/70">
           Together those two are why a small team can serve customers on five continents from one dashboard.
         </p>
       ) : null}
@@ -65,14 +65,14 @@ function Feature({
         {n}
       </span>
       <div className="min-w-0 flex-1">
-        <h3 className="font-display text-[clamp(0.78rem,1.2vw,0.95rem)] font-bold text-blue-deep">
+        <h3 className="font-display text-[clamp(0.78rem,1.68cqw,0.95rem)] font-bold text-blue-deep">
           {title}
         </h3>
-        <p className="mt-0.5 text-[clamp(0.62rem,0.9vw,0.75rem)] leading-snug text-ink/65">
+        <p className="mt-0.5 text-[clamp(0.62rem,1.26cqw,0.75rem)] leading-snug text-ink/65">
           {body}
         </p>
       </div>
-      <div className="hidden shrink-0 sm:block">
+      <div className="shrink-0">
         <svg viewBox="0 0 90 40" className="h-10 w-auto">
           {diagram === 'isolated' ? (
             <>

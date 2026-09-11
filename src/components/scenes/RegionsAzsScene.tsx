@@ -13,7 +13,7 @@ export function RegionsAzsScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="Regions and" titleAccent="Availability Zones" compact={compact}>
       <div className="mt-2 grid flex-1 grid-cols-[0.85fr_1fr] gap-4">
-        <ul className="space-y-2 text-[clamp(0.62rem,0.95vw,0.78rem)] leading-snug">
+        <ul className="space-y-2 text-[clamp(0.62rem,1.33cqw,0.78rem)] leading-snug">
           <Fact visible={shown('minimum')}>
             <strong className="text-blue-deep">Two or more</strong> availability zones in every region.
           </Fact>

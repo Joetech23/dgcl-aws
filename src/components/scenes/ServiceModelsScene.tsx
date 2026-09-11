@@ -43,7 +43,7 @@ export function ServiceModelsScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="IaaS, PaaS," titleAccent="SaaS" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.68rem,1.05vw,0.88rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/65">
           How much of the stack the provider looks after, and how much stays with you.
         </p>
       ) : null}
@@ -60,7 +60,7 @@ export function ServiceModelsScene({ shown, compact }: SceneProps) {
                 >
                   <div className="mb-1.5 flex items-baseline gap-2">
                     <span
-                      className="font-display text-[clamp(0.78rem,1.35vw,1.05rem)] font-extrabold"
+                      className="font-display text-[clamp(0.78rem,1.89cqw,1.05rem)] font-extrabold"
                       style={{ color: m.tint }}
                     >
                       {m.label}

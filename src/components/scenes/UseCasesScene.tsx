@@ -65,7 +65,7 @@ export function UseCasesScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="Common" titleAccent="Use Cases" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[70%] text-[clamp(0.68rem,1.05vw,0.88rem)] leading-relaxed text-ink/60">
+        <p className="anim-rise mt-1 max-w-[70%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/60">
           What do people actually build. Four workloads account for most of it.
         </p>
       ) : null}
@@ -84,10 +84,10 @@ export function UseCasesScene({ shown, compact }: SceneProps) {
                   </svg>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-display text-[clamp(0.78rem,1.2vw,0.95rem)] font-bold text-blue-deep">
+                  <h3 className="font-display text-[clamp(0.78rem,1.68cqw,0.95rem)] font-bold text-blue-deep">
                     {c.label}
                   </h3>
-                  <p className="mt-0.5 text-[clamp(0.62rem,0.9vw,0.75rem)] leading-snug text-ink/60">
+                  <p className="mt-0.5 text-[clamp(0.62rem,1.26cqw,0.75rem)] leading-snug text-ink/60">
                     {c.line}
                   </p>
                 </div>

@@ -15,12 +15,12 @@ export function AudienceScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="Designed for" titleAccent="IT and non-IT professionals" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[80%] text-[clamp(0.7rem,1.1vw,0.9rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[80%] text-[clamp(0.7rem,1.54cqw,0.9rem)] leading-relaxed text-ink/65">
           You do not need a technical background to start. The course meets you where you are.
         </p>
       ) : null}
 
-      <div className="mt-5 grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+      <div className="mt-5 grid grid-cols-2 items-start gap-4">
         <PathCard
           visible={shown('it')}
           eyebrow="Path A"
@@ -46,7 +46,7 @@ export function AudienceScene({ shown, compact }: SceneProps) {
       </div>
 
       {shown('confidence') ? (
-        <div className="anim-rise mt-4 flex items-center gap-2 rounded-md border-l-[3px] border-gold bg-gold/5 px-3 py-2 text-[clamp(0.65rem,0.95vw,0.8rem)] text-ink/75">
+        <div className="anim-rise mt-4 flex items-center gap-2 rounded-md border-l-[3px] border-gold bg-gold/5 px-3 py-2 text-[clamp(0.65rem,1.33cqw,0.8rem)] text-ink/75">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="shrink-0">
             <path d="M10 2l2.4 5.4L18 8l-4 3.9 1 5.6L10 15l-5 2.5 1-5.6L2 8l5.6-.6L10 2z" fill="#FFC000" />
           </svg>
@@ -103,14 +103,14 @@ function PathCard({
       </div>
 
       <div className="p-3.5">
-        <h3 className="font-display text-[clamp(0.9rem,1.5vw,1.2rem)] font-bold text-blue-deep">
+        <h3 className="font-display text-[clamp(0.9rem,2.1cqw,1.2rem)] font-bold text-blue-deep">
           {title}
         </h3>
         <ul className="mt-2 space-y-1.5">
           {lines.map((l) => (
             <li
               key={l}
-              className="flex items-start gap-2 text-[clamp(0.65rem,1vw,0.82rem)] leading-snug text-ink/70"
+              className="flex items-start gap-2 text-[clamp(0.65rem,1.4cqw,0.82rem)] leading-snug text-ink/70"
             >
               <span
                 className="mt-1.5 h-1.5 w-1.5 shrink-0 rotate-45"

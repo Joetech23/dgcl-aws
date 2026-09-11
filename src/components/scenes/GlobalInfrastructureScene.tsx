@@ -15,7 +15,7 @@ export function GlobalInfrastructureScene({ shown, compact }: SceneProps) {
       <div className="mt-2 grid flex-1 grid-cols-[0.85fr_1fr] gap-4">
         <div className="flex flex-col">
           {shown('intro') ? (
-            <p className="anim-rise text-[clamp(0.68rem,1.05vw,0.85rem)] leading-relaxed text-ink/70">
+            <p className="anim-rise text-[clamp(0.68rem,1.47cqw,0.85rem)] leading-relaxed text-ink/70">
               One of the largest networks on earth. Three layers to it.
             </p>
           ) : null}
@@ -55,7 +55,7 @@ export function GlobalInfrastructureScene({ shown, compact }: SceneProps) {
       </div>
 
       {shown('summary') ? (
-        <p className="anim-rise mt-3 border-l-[3px] border-gold pl-3 font-display text-[clamp(0.75rem,1.15vw,0.95rem)] font-semibold text-blue-deep">
+        <p className="anim-rise mt-3 border-l-[3px] border-gold pl-3 font-display text-[clamp(0.75rem,1.61cqw,0.95rem)] font-semibold text-blue-deep">
           Regions, zones, and edges. That is the whole map.
         </p>
       ) : null}
@@ -88,10 +88,10 @@ function Tier({
         {n}
       </span>
       <div className="min-w-0">
-        <p className="font-display text-[clamp(0.7rem,1.1vw,0.9rem)] font-bold" style={{ color: tint }}>
+        <p className="font-display text-[clamp(0.7rem,1.54cqw,0.9rem)] font-bold" style={{ color: tint }}>
           {label}
         </p>
-        <p className="text-[clamp(0.6rem,0.9vw,0.75rem)] leading-snug text-ink/60">{body}</p>
+        <p className="text-[clamp(0.6rem,1.26cqw,0.75rem)] leading-snug text-ink/60">{body}</p>
       </div>
     </li>
   )

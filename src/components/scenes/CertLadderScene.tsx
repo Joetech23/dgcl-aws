@@ -48,7 +48,7 @@ export function CertLadderScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="AWS" titleAccent="Certification Path" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[75%] text-[clamp(0.68rem,1.05vw,0.88rem)] leading-relaxed text-ink/60">
+        <p className="anim-rise mt-1 max-w-[75%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/60">
           Four tiers that map to how much experience you have on AWS.
         </p>
       ) : null}
@@ -77,14 +77,14 @@ export function CertLadderScene({ shown, compact }: SceneProps) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-2">
                       <h3
-                        className="font-display text-[clamp(0.8rem,1.35vw,1.05rem)] font-bold"
+                        className="font-display text-[clamp(0.8rem,1.89cqw,1.05rem)] font-bold"
                         style={{ color: lv.tint }}
                       >
                         {lv.label}
                       </h3>
                       <span className="font-mono text-[10px] text-ink/45">{lv.subtitle}</span>
                     </div>
-                    <p className="mt-0.5 truncate text-[clamp(0.6rem,0.92vw,0.76rem)] text-ink/60">
+                    <p className="mt-0.5 truncate text-[clamp(0.6rem,1.29cqw,0.76rem)] text-ink/60">
                       {lv.exams}
                     </p>
                   </div>

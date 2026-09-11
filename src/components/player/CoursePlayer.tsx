@@ -8,16 +8,21 @@ import { Scene } from '@/components/scenes'
 import { Interaction } from '@/components/interactions'
 import { Rail } from './Rail'
 import { Transport } from './Transport'
+import { ScaledStage } from './ScaledStage'
+import { CaptionBand } from './CaptionBand'
 import { getProgressStore } from '@/lib/progress'
+
+/** Seconds an activity stays on screen after it is completed. */
+const AUTO_CLOSE_S = 6
 
 /**
  * The whole course.
  *
- * A designed player around the audio timeline: collapsible left rail, a stage
- * that is always 16:9 (mobile included), a header that reads like the deck's
- * own brand chrome rather than a web app header, and a gate panel that stays
- * on screen after completion so the learner and the reviewer can both see the
- * outcome of the activity.
+ * Main column, top to bottom: bar, the video-like stage, the activity dock
+ * (when the course stops to ask something), three lines of live transcript,
+ * and the transport. The contents rail is a collapsible sidebar on desktop and
+ * a slide-in drawer on phones, so a phone's main view is just video and
+ * controls.
  */
 export function CoursePlayer({ slides }: { slides: Slide[] }) {
   const [started, setStarted] = useState(false)
@@ -26,9 +31,14 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
   const [timings, setTimings] = useState<Record<string, SlideTiming>>({})
   const [activeModel, setActiveModel] = useState(0)
   const [railOpen, setRailOpen] = useState(true)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const stageRef = useRef<HTMLDivElement | null>(null)
 
   const slide = slides[index]
   const timing = timings[slide.id] ?? null
+
+  const completedRef = useRef(completed)
+  completedRef.current = completed
 
   /* ---------- progress ---------- */
 
@@ -59,16 +69,22 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
 
   /* ---------- the gate ---------- */
 
-  const gateLine = useMemo(
-    () => slide.script.findIndex((l) => l.gate),
-    [slide.script],
-  )
+  const gateLine = useMemo(() => slide.script.findIndex((l) => l.gate), [slide.script])
   const [gateDone, setGateDone] = useState(false)
+  const [gateDismissed, setGateDismissed] = useState(false)
 
   useEffect(() => {
     setGateDone(completed.has(slide.id))
-    setActiveModel(0)
   }, [slide.id, completed])
+
+  // Per slide, not per completion: keying this on `completed` would slam the
+  // panel shut the instant the learner finished, before they read the result.
+  // A slide already completed on arrival starts dismissed, so revisiting does
+  // not re-open an activity they have done.
+  useEffect(() => {
+    setGateDismissed(completedRef.current.has(slide.id))
+    setActiveModel(0)
+  }, [slide.id, started])
 
   const timeline = useTimeline({
     src: `./audio/${slide.id}.mp3`,
@@ -119,8 +135,7 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
 
   const autoplayRef = useRef(false)
   useEffect(() => {
-    if (!started) return
-    if (!timing) return
+    if (!started || !timing) return
     if (autoplayRef.current) {
       autoplayRef.current = false
       play()
@@ -137,6 +152,20 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
     go(index - 1)
   }, [go, index])
 
+  const closeGate = useCallback(() => setGateDismissed(true), [])
+
+  const toggleContents = useCallback(() => {
+    if (window.matchMedia('(min-width: 1024px)').matches) setRailOpen((v) => !v)
+    else setDrawerOpen((v) => !v)
+  }, [])
+
+  const toggleFullscreen = useCallback(() => {
+    const el = stageRef.current
+    if (!el) return
+    if (document.fullscreenElement) void document.exitFullscreen()
+    else void el.requestFullscreen?.().catch(() => {})
+  }, [])
+
   if (!started) {
     return (
       <Poster
@@ -149,107 +178,141 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
     )
   }
 
-  const gateMs =
-    timing && gateLine >= 0 ? (timing.lines[gateLine]?.endMs ?? null) : null
+  const gateMs = timing && gateLine >= 0 ? (timing.lines[gateLine]?.endMs ?? null) : null
+  const gateReached =
+    slide.interaction != null && gateMs !== null && timeline.currentMs >= gateMs - 20
+  const gateOpen = gateReached && !gateDismissed
 
-  // Show the activity panel from the moment the gate is reached, and keep it
-  // on screen for the rest of the slide so the completed state is visible.
-  const gatePanelVisible =
-    slide.interaction != null &&
-    gateMs !== null &&
-    timeline.currentMs >= gateMs - 20
+  const onGateComplete = () => {
+    setGateDone(true)
+    markComplete()
+    const remaining = gateMs !== null ? timeline.durationMs - gateMs : 0
+    if (remaining > 400) setTimeout(() => play(), 250)
+  }
+
+  const railProps = {
+    slides,
+    currentIndex: index,
+    completed,
+    slide,
+    timing,
+    lineIndex: timeline.lineIndex,
+    wordIndex: timeline.wordIndex,
+    onSeek: seek,
+  }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-ink lg:h-[100dvh] lg:flex-row">
+    <div className="flex min-h-[100dvh] bg-ink lg:h-[100dvh]">
+      {/* Desktop sidebar, collapsible */}
       <aside
-        className={`chrome shrink-0 border-white/10 transition-[width] duration-300 lg:order-1 lg:h-auto lg:border-r ${
-          railOpen ? 'order-2 border-t lg:order-1 lg:w-[var(--rail-w)]' : 'hidden lg:block lg:w-[54px]'
+        className={`chrome hidden shrink-0 border-r border-white/10 transition-[width] duration-300 lg:block ${
+          railOpen ? 'w-[var(--rail-w)]' : 'w-[54px]'
         }`}
       >
         <Rail
-          slides={slides}
-          currentIndex={index}
-          completed={completed}
-          slide={slide}
-          timing={timing}
-          lineIndex={timeline.lineIndex}
-          wordIndex={timeline.wordIndex}
+          {...railProps}
           collapsed={!railOpen}
           onExpand={() => setRailOpen(true)}
           onSelectSlide={go}
-          onSeek={seek}
         />
       </aside>
 
-      <main className="chrome order-1 flex min-h-0 flex-1 flex-col lg:order-2">
+      {/* Phone drawer */}
+      {drawerOpen ? (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            aria-label="Close contents"
+            onClick={() => setDrawerOpen(false)}
+            className="anim-fade absolute inset-0 bg-black/60"
+          />
+          <aside className="chrome anim-drawer absolute inset-y-0 left-0 flex w-[84%] max-w-[320px] flex-col border-r border-white/10 shadow-stage">
+            <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2">
+              <Image
+                src="/brand/dgcl-logo.png"
+                alt="DGCL Digital Cloud Academy"
+                width={520}
+                height={220}
+                className="h-7 w-auto"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Close contents"
+                className="ml-auto grid h-8 w-8 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1">
+              <Rail
+                {...railProps}
+                onSelectSlide={(i) => {
+                  go(i)
+                  setDrawerOpen(false)
+                }}
+              />
+            </div>
+          </aside>
+        </div>
+      ) : null}
+
+      <main className="chrome flex min-w-0 flex-1 flex-col">
         <MinimalBar
           index={index}
           total={slides.length}
-          progressPct={
-            timeline.durationMs ? (timeline.currentMs / timeline.durationMs) * 100 : 0
-          }
-          railOpen={railOpen}
-          onToggleRail={() => setRailOpen((v) => !v)}
+          progressPct={timeline.durationMs ? (timeline.currentMs / timeline.durationMs) * 100 : 0}
+          contentsOpen={railOpen}
+          onToggleContents={toggleContents}
         />
 
-        {/* the stage — sharp edges, always 16:9. The gate panel floats over
-            it, so the scene keeps its full width and the diagram is never
-            squeezed by the activity. */}
-        <div className="relative flex min-h-0 flex-1 items-center justify-center px-3 pb-1 sm:px-4">
-          {/* Mobile keeps the video aspect but at a slightly taller floor so
-              the header and the body copy inside the slide both have room.
-              Desktop stays a clean 16:9. */}
-          <div className="stage-container relative flex aspect-[4/3] max-h-full w-full overflow-hidden shadow-stage ring-1 ring-white/10 sm:aspect-video">
-            <div className="absolute inset-0">
-              <Scene
-                slide={slide}
-                shown={shown}
-                currentMs={timeline.currentMs}
-                activeModel={activeModel}
-              />
-            </div>
-
-            {/* Desktop: activity floats as a side popup, layered on top. */}
-            {gatePanelVisible ? (
-              <div className="pointer-events-none absolute inset-0 hidden lg:block">
-                <div className="pointer-events-auto absolute inset-y-3 right-3 flex w-[40%] max-w-[520px] flex-col overflow-hidden rounded-lg border-2 border-gold bg-white shadow-[0_28px_80px_-24px_rgba(0,0,60,0.55)] anim-slide-in">
-                  <GatePanel
-                    slideId={slide.id}
-                    gateDone={gateDone}
-                    onModelChange={setActiveModel}
-                    interaction={slide.interaction!}
-                    onComplete={() => {
-                      setGateDone(true)
-                      markComplete()
-                      const remaining =
-                        gateMs !== null ? timeline.durationMs - gateMs : 0
-                      if (remaining > 400) setTimeout(() => play(), 250)
-                    }}
-                  />
-                </div>
-              </div>
-            ) : null}
-          </div>
+        {/* The stage. Always the same slide, scaled to fit. */}
+        <div
+          ref={stageRef}
+          className="stage-fs flex shrink-0 px-3 pt-3 sm:px-4 lg:min-h-0 lg:flex-1 lg:pb-2"
+        >
+          <ScaledStage className="w-full lg:h-full">
+            <Scene
+              slide={slide}
+              shown={shown}
+              currentMs={timeline.currentMs}
+              activeModel={activeModel}
+            />
+          </ScaledStage>
         </div>
 
-        {/* Mobile: activity flows underneath the stage instead of splitting it. */}
-        {gatePanelVisible ? (
-          <div className="border-t-[3px] border-gold bg-white lg:hidden">
-            <MobileGate
-              slideId={slide.id}
-              gateDone={gateDone}
-              interaction={slide.interaction!}
-              onModelChange={setActiveModel}
-              onComplete={() => {
-                setGateDone(true)
-                markComplete()
-                const remaining =
-                  gateMs !== null ? timeline.durationMs - gateMs : 0
-                if (remaining > 400) setTimeout(() => play(), 250)
-              }}
+        {/* The activity, below the video. */}
+        {gateOpen ? (
+          <GateDock
+            slideId={slide.id}
+            interaction={slide.interaction!}
+            gateDone={gateDone}
+            onComplete={onGateComplete}
+            onModelChange={setActiveModel}
+            onClose={closeGate}
+          />
+        ) : (
+          <div className="relative shrink-0">
+            <CaptionBand
+              slide={slide}
+              timing={timing}
+              lineIndex={timeline.lineIndex}
+              wordIndex={timeline.wordIndex}
+              className={gateReached && gateDismissed ? 'pr-44 sm:pr-48' : ''}
             />
+            {gateReached && gateDismissed ? (
+              <button
+                type="button"
+                onClick={() => setGateDismissed(false)}
+                className="anim-rise absolute bottom-2 right-3 inline-flex items-center gap-2 rounded-full bg-gold px-3 py-1.5 font-display text-[12px] font-bold text-blue-deep shadow-stage hover:brightness-110 sm:right-4"
+              >
+                <span className="block h-1.5 w-1.5 rotate-45 bg-blue-deep" />
+                {gateDone ? 'Review activity' : 'Your turn'}
+              </button>
+            ) : null}
           </div>
-        ) : null}
+        )}
 
         <Transport
           currentMs={timeline.currentMs}
@@ -265,6 +328,7 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
           onToggleMute={timeline.toggleMute}
           onPrev={prev}
           onNext={next}
+          onFullscreen={toggleFullscreen}
           hasPrev={index > 0}
           hasNext={index < slides.length - 1}
         />
@@ -275,34 +339,36 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
   )
 }
 
-/**
- * The minimal outer bar.
- *
- * The slide carries its own header — this strip just holds the rail toggle,
- * the slide counter, and a thin progress meter. Everything else has moved
- * onto the slide itself.
- */
+function CloseIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+      <path d="M4 4l8 8M12 4l-8 8" />
+    </svg>
+  )
+}
+
+/** The slim bar above the stage: contents toggle, progress dots, counter. */
 function MinimalBar({
   index,
   total,
   progressPct,
-  railOpen,
-  onToggleRail,
+  contentsOpen,
+  onToggleContents,
 }: {
   index: number
   total: number
   progressPct: number
-  railOpen: boolean
-  onToggleRail: () => void
+  contentsOpen: boolean
+  onToggleContents: () => void
 }) {
   return (
     <div className="shrink-0 border-b border-white/10 bg-gradient-to-b from-black/30 to-transparent">
       <div className="flex items-center gap-3 px-3 py-2 sm:px-4">
         <button
           type="button"
-          onClick={onToggleRail}
-          aria-label={railOpen ? 'Collapse contents' : 'Expand contents'}
-          aria-pressed={railOpen}
+          onClick={onToggleContents}
+          aria-label="Contents"
+          aria-expanded={contentsOpen}
           className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/10 bg-white/5 text-white/80 transition hover:border-gold/60 hover:bg-white/10 hover:text-gold"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
@@ -322,7 +388,7 @@ function MinimalBar({
               />
             ))}
           </div>
-          <span className="rounded-md border border-white/10 bg-white/10 px-2.5 py-1 font-mono text-[11px] tabular-nums font-semibold text-white">
+          <span className="rounded-md border border-white/10 bg-white/10 px-2.5 py-1 font-mono text-[11px] font-semibold tabular-nums text-white">
             {String(index + 1).padStart(2, '0')}
             <span className="text-white/40">/{String(total).padStart(2, '0')}</span>
           </span>
@@ -339,29 +405,42 @@ function MinimalBar({
 }
 
 /**
- * The activity as a stacked panel on phones.
+ * The activity, docked under the video.
  *
- * The user's rule: the activity must not eat into the video area on a small
- * screen. So it sits below the stage in normal document flow, and the stage
- * stays a clean 16:9 all the way down to 375px.
+ * Closable at any time with the X. Once the learner finishes, it closes itself
+ * after a few seconds, with a visible countdown so the result does not vanish
+ * without warning. A closed activity can be reopened from the gold pill.
  */
-function MobileGate({
+function GateDock({
   slideId,
   interaction,
   gateDone,
   onComplete,
   onModelChange,
+  onClose,
 }: {
   slideId: string
   interaction: NonNullable<Slide['interaction']>
   gateDone: boolean
   onComplete: () => void
   onModelChange: (i: number) => void
+  onClose: () => void
 }) {
+  const [finishedHere, setFinishedHere] = useState(false)
+
+  useEffect(() => {
+    if (!finishedHere) return
+    const t = setTimeout(onClose, AUTO_CLOSE_S * 1000)
+    return () => clearTimeout(t)
+  }, [finishedHere, onClose])
+
   return (
-    <div className="flex flex-col">
+    <section
+      aria-label="Your turn"
+      className="anim-rise mx-3 mb-1 mt-1 flex max-h-[44vh] shrink-0 flex-col overflow-hidden rounded-md border-2 border-gold bg-white shadow-stage sm:mx-4 lg:max-h-[42%]"
+    >
       <div
-        className={`flex shrink-0 items-center gap-2 px-3 py-1.5 transition-colors duration-300 ${
+        className={`relative flex shrink-0 items-center gap-2 px-3 py-1.5 transition-colors duration-300 ${
           gateDone ? 'bg-mint text-blue-deep' : 'bg-blue-deep text-gold'
         }`}
       >
@@ -369,22 +448,45 @@ function MobileGate({
         <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em]">
           {gateDone ? 'Complete' : 'Your turn'}
         </span>
+        {finishedHere ? (
+          <span className="font-mono text-[10px] text-blue-deep/70">closing in {AUTO_CLOSE_S}s</span>
+        ) : null}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close activity"
+          className={`ml-auto grid h-7 w-7 place-items-center rounded-md transition ${
+            gateDone ? 'text-blue-deep hover:bg-blue-deep/10' : 'text-white/80 hover:bg-white/10 hover:text-white'
+          }`}
+        >
+          <CloseIcon />
+        </button>
+        {finishedHere ? (
+          <span
+            aria-hidden
+            className="countdown absolute inset-x-0 bottom-0 h-[3px] bg-blue-deep/60"
+            style={{ ['--countdown' as string]: `${AUTO_CLOSE_S}s` }}
+          />
+        ) : null}
       </div>
-      <div className="min-h-0 max-h-[55vh] overflow-y-auto p-3 bg-white">
+      <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
         <Interaction
           key={slideId}
           spec={interaction}
-          onComplete={onComplete}
+          onComplete={() => {
+            setFinishedHere(true)
+            onComplete()
+          }}
           onModelChange={onModelChange}
         />
       </div>
-    </div>
+    </section>
   )
 }
 
 function PlayerFooter() {
   return (
-    <footer className="flex shrink-0 items-center gap-3 border-t border-white/10 bg-black/30 px-3 py-1.5 sm:px-4">
+    <footer className="hidden shrink-0 items-center gap-3 border-t border-white/10 bg-black/30 px-4 py-1.5 lg:flex">
       <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/40">
         DGCL Digital Cloud Academy
       </span>
@@ -393,50 +495,6 @@ function PlayerFooter() {
         Interactive · SCORM 1.2
       </span>
     </footer>
-  )
-}
-
-/**
- * The activity, presented as a side panel.
- *
- * Stays on screen from the moment the gate is reached until the slide changes,
- * so a completed activity does not vanish the second the learner finishes it.
- * The gold header stripe flips green on completion.
- */
-function GatePanel({
-  slideId,
-  interaction,
-  gateDone,
-  onComplete,
-  onModelChange,
-}: {
-  slideId: string
-  interaction: NonNullable<Slide['interaction']>
-  gateDone: boolean
-  onComplete: () => void
-  onModelChange: (i: number) => void
-}) {
-  return (
-    <div className="flex h-full w-full flex-col">
-      <div
-        className={`flex shrink-0 items-center gap-2 px-3 py-1.5 transition-colors duration-300 ${
-          gateDone ? 'bg-mint text-blue-deep' : 'bg-blue-deep text-gold'
-        }`}
-      >
-        <span className={`block h-2 w-2 rotate-45 ${gateDone ? 'bg-blue-deep' : 'bg-gold'}`} />
-        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em]">
-          {gateDone ? 'Complete' : 'Your turn'}
-        </span>
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
-        <Interaction
-          key={slideId}
-          spec={interaction}
-          onComplete={onComplete}
-          onModelChange={onModelChange}
-        />
-      </div>
-    </div>
   )
 }
 
@@ -461,7 +519,7 @@ function Poster({ onStart, slideCount }: { onStart: () => void; slideCount: numb
             alt="DGCL Digital Cloud Academy"
             width={520}
             height={220}
-            className="mx-auto h-16 w-auto brightness-0 invert lg:mx-0"
+            className="mx-auto h-16 w-auto lg:mx-0"
             style={{ filter: 'brightness(0) invert(1)' }}
             priority
           />
@@ -489,14 +547,7 @@ function Poster({ onStart, slideCount }: { onStart: () => void; slideCount: numb
 
         <div className="pointer-events-none relative hidden aspect-square lg:block">
           <div className="anim-float absolute inset-0">
-            <Image
-              src="/art/cloud-render.png"
-              alt=""
-              fill
-              sizes="45vw"
-              className="object-contain"
-              priority
-            />
+            <Image src="/art/cloud-render.png" alt="" fill sizes="45vw" className="object-contain" priority />
           </div>
         </div>
       </div>

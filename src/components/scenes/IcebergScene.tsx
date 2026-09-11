@@ -27,7 +27,7 @@ export function IcebergScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="Licensing vs" titleAccent="Pay as You Go" compact={compact}>
       {shown('tip') ? (
-        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.68rem,1.05vw,0.88rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/65">
           Both invoices show one number. The difference is what sits underneath it.
         </p>
       ) : null}
@@ -75,7 +75,7 @@ function IcebergCard({
       style={{ borderColor: tint, background: `${tint}05` }}
     >
       <p
-        className="font-display text-[clamp(0.78rem,1.3vw,1rem)] font-bold"
+        className="font-display text-[clamp(0.78rem,1.82cqw,1rem)] font-bold"
         style={{ color: tint }}
       >
         {label}
@@ -110,7 +110,7 @@ function IcebergCard({
         {costs.map((c, i) => (
           <li
             key={c}
-            className={`flex items-start gap-1.5 text-[clamp(0.58rem,0.85vw,0.72rem)] leading-tight transition-all ${
+            className={`flex items-start gap-1.5 text-[clamp(0.58rem,1.19cqw,0.72rem)] leading-tight transition-all ${
               costsVisible ? 'opacity-100' : 'opacity-0'
             }`}
             style={{ transitionDelay: `${i * 60}ms` }}

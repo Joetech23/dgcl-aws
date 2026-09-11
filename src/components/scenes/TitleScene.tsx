@@ -13,7 +13,7 @@ import type { SceneProps } from './types'
  */
 export function TitleScene({ shown }: SceneProps) {
   return (
-    <div className="relative h-full w-full overflow-hidden bg-blue-deep">
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-blue-deep">
       {/* Soft brand glow that drifts to give the flat navy some life */}
       <div
         aria-hidden
@@ -60,12 +60,12 @@ export function TitleScene({ shown }: SceneProps) {
           alt="DGCL Digital Cloud Academy"
           width={520}
           height={220}
-          className="h-6 w-auto sm:h-7"
+          className="h-7 w-auto"
           style={{ filter: 'brightness(0) invert(1)' }}
           priority
         />
         <span aria-hidden className="h-4 w-px bg-white/20" />
-        <span className="font-display text-[clamp(0.62rem,1.1vw,0.88rem)] font-semibold text-white/85">
+        <span className="font-display text-[clamp(0.62rem,1.54cqw,0.88rem)] font-semibold text-white/85">
           AWS Cloud Training · Section 1
         </span>
         <span className="ml-auto h-0.5 w-16 bg-gold" />
@@ -89,9 +89,9 @@ export function TitleScene({ shown }: SceneProps) {
       </div>
 
       {/* Copy, left */}
-      <div className="relative flex h-full flex-col justify-center px-[6%] py-[8%]">
+      <div className="relative flex min-h-0 flex-1 flex-col justify-center px-[6%] py-[6%]">
         {shown('title') ? (
-          <h1 className="anim-rise font-display text-[clamp(1rem,4.6vw,3.8rem)] font-extrabold leading-[1.02] tracking-tight text-white">
+          <h1 className="anim-rise font-display text-[clamp(1rem,6.44cqw,3.8rem)] font-extrabold leading-[1.02] tracking-tight text-white">
             AWS Cloud
             <br />
             Training
@@ -100,17 +100,17 @@ export function TitleScene({ shown }: SceneProps) {
 
         {shown('subtitle') ? (
           <div className="anim-rise mt-3 max-w-[52%]">
-            <p className="font-display text-[clamp(0.7rem,2vw,1.55rem)] font-bold text-gold">
+            <p className="font-display text-[clamp(0.7rem,2.8cqw,1.55rem)] font-bold text-gold">
               Section 1
             </p>
-            <p className="mt-0.5 font-display text-[clamp(0.55rem,1.6vw,1.25rem)] font-semibold text-gold/90">
+            <p className="mt-0.5 font-display text-[clamp(0.55rem,2.24cqw,1.25rem)] font-semibold text-gold/90">
               AWS Web Services Fundamentals
             </p>
           </div>
         ) : null}
 
         {shown('promise') ? (
-          <p className="anim-rise mt-4 hidden max-w-[46%] font-body text-[clamp(0.72rem,1.15vw,0.95rem)] leading-relaxed text-white/75 sm:block">
+          <p className="anim-rise mt-4 max-w-[46%] font-body text-[clamp(0.72rem,1.61cqw,0.95rem)] leading-relaxed text-white/75">
             Ten short lessons on what AWS is, what it gives you, and how it fits into the
             work you already do.
           </p>

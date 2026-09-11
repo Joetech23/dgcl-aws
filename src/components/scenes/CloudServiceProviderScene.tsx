@@ -20,7 +20,7 @@ export function CloudServiceProviderScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="What is a" titleAccent="Cloud Service Provider" compact={compact}>
       {shown('defn') ? (
-        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.7rem,1.1vw,0.9rem)] leading-relaxed text-ink/70">
+        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.7rem,1.54cqw,0.9rem)] leading-relaxed text-ink/70">
           A company that lets you <strong className="text-blue-deep">rent</strong> computing,
           storage, and networking, instead of buying it yourself.
         </p>
@@ -28,13 +28,13 @@ export function CloudServiceProviderScene({ shown, compact }: SceneProps) {
 
       <ul className="mt-4 space-y-2">
         {shown('they-own') ? (
-          <li className="anim-rise flex items-start gap-2 text-[clamp(0.68rem,1vw,0.85rem)] text-ink/70">
+          <li className="anim-rise flex items-start gap-2 text-[clamp(0.68rem,1.4cqw,0.85rem)] text-ink/70">
             <span aria-hidden className="mt-1.5 h-1.5 w-1.5 rotate-45 bg-blue-electric" />
             <span>They own the buildings, the machines, the engineers.</span>
           </li>
         ) : null}
         {shown('pay') ? (
-          <li className="anim-rise flex items-start gap-2 text-[clamp(0.68rem,1vw,0.85rem)] text-ink/70">
+          <li className="anim-rise flex items-start gap-2 text-[clamp(0.68rem,1.4cqw,0.85rem)] text-ink/70">
             <span aria-hidden className="mt-1.5 h-1.5 w-1.5 rotate-45 bg-blue-electric" />
             <span>You pay for what you use. Stop paying when you stop.</span>
           </li>
@@ -61,7 +61,7 @@ export function CloudServiceProviderScene({ shown, compact }: SceneProps) {
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
                   <span
-                    className="font-display text-[clamp(0.95rem,1.7vw,1.35rem)] font-extrabold"
+                    className="font-display text-[clamp(0.95rem,2.38cqw,1.35rem)] font-extrabold"
                     style={{ color: p.tint }}
                   >
                     {p.name}
