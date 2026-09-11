@@ -1,0 +1,264 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --rail-w: 300px;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: #0b1020;
+  color: #0b1020;
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The player chrome is deep DGCL navy; the stage inside it is light. That
+   contrast is what makes the slide read as a projected surface rather than a
+   web page. */
+.chrome {
+  background:
+    radial-gradient(1200px 400px at 20% -10%, rgba(27, 26, 255, 0.28), transparent 60%),
+    linear-gradient(180deg, #000a3d 0%, #000728 100%);
+}
+
+.stage-frame {
+  background: linear-gradient(180deg, #ffffff 0%, #f7f9ff 100%);
+}
+
+:focus-visible {
+  outline: 3px solid #ffc000;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+::selection {
+  background: rgba(255, 192, 0, 0.35);
+}
+
+/* ---- motion ----
+   Everything on a slide is driven by the audio clock, so entrances are short
+   and declarative: the element is either in or out for a given millisecond.
+   No looping ambient effects — motion here means "this just arrived". */
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes wipe-in {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  60% {
+    transform: scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.anim-rise {
+  animation: rise-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.anim-wipe {
+  animation: wipe-in 0.7s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+.anim-pop {
+  animation: pop-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ---- ambient motion loops ----
+   Subtle continuous animations that give a slide the "produced" feel the user
+   is asking for. Each is capped in amplitude so it never fights the content. */
+
+@keyframes flow-dash {
+  to { stroke-dashoffset: -200; }
+}
+@keyframes flow-dash-reverse {
+  to { stroke-dashoffset: 200; }
+}
+.flow-line {
+  stroke-dasharray: 5 5;
+  animation: flow-dash 8s linear infinite;
+}
+.flow-line-reverse {
+  stroke-dasharray: 5 5;
+  animation: flow-dash-reverse 8s linear infinite;
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(var(--orbit-r, 40px)) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(var(--orbit-r, 40px)) rotate(-360deg); }
+}
+.orbit {
+  animation: orbit 14s linear infinite;
+}
+
+@keyframes drift-x {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(8px); }
+}
+.drift-x { animation: drift-x 7s ease-in-out infinite; }
+
+@keyframes drift-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+.drift-y { animation: drift-y 6s ease-in-out infinite; }
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.6); opacity: 0.65; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+.pulse-ring { animation: pulse-ring 2.6s ease-out infinite; transform-origin: center; }
+
+@keyframes ambient-glow {
+  0%, 100% { opacity: 0.35; transform: translate(0, 0) scale(1); }
+  50%      { opacity: 0.55; transform: translate(-14px, 8px) scale(1.06); }
+}
+.ambient-glow { animation: ambient-glow 12s ease-in-out infinite; }
+
+@keyframes slow-spin {
+  to { transform: rotate(360deg); }
+}
+.slow-spin { animation: slow-spin 22s linear infinite; transform-origin: center; }
+
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-x { animation: marquee-x 24s linear infinite; }
+
+/* Reusable background: a soft grid of dots that echoes the deck's bottom-left
+   corner texture. */
+.dots-bg {
+  background-image: radial-gradient(rgba(0, 0, 102, 0.14) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Below a phone-sized stage the clamp-based type is still too eager: a body
+   line at 0.85rem inside a 210px-tall 16:9 box overflows sideways. This shrinks
+   the whole slide once its container is very narrow, so bullets always wrap. */
+@container (max-width: 500px) {
+  .slide-scale {
+    font-size: 0.72em;
+  }
+}
+.stage-container {
+  container-type: inline-size;
+}
+
+.anim-slide-in {
+  animation: slide-in-right 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.anim-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Card treatment kept simple: coloured border, tinted background, nothing
+   extra. The corner marks and gradient border have been retired at the user's
+   request — a plain rule reads better here than a printed one. */
+.card-plain {
+  border: 2px solid var(--card-tint, #000099);
+  background: linear-gradient(180deg, #ffffff, color-mix(in srgb, var(--card-tint, #000099) 5%, #ffffff));
+}
+
+/* Scrollbars inside the rail, so the chrome stays intact */
+.rail-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.rail-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 3px;
+}
+.rail-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* The transport scrubber. Styled from scratch because the native range control
+   cannot show the interaction markers, which are the point of it. */
+input[type='range'].scrub {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+input[type='range'].scrub::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+}
+input[type='range'].scrub::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 13px;
+  width: 13px;
+  margin-top: -4.5px;
+  border-radius: 999px;
+  background: #ffc000;
+  border: 2px solid #000728;
+}
+input[type='range'].scrub::-moz-range-thumb {
+  height: 13px;
+  width: 13px;
+  border-radius: 999px;
+  background: #ffc000;
+  border: 2px solid #000728;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
