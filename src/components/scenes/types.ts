@@ -10,4 +10,7 @@ export type SceneProps = {
   compact?: boolean
   /** Which stack-explorer model is currently selected. */
   activeModel?: number
+  /** Header strip text, e.g. "AWS Cloud Training · Module 3". Shared layouts
+   *  are reused across modules, so they cannot hard-code the number. */
+  moduleLabel?: string
 }

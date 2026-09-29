@@ -1,7 +1,7 @@
 import { chromium } from 'playwright'
 const browser = await chromium.launch({ channel: 'chrome' })
 const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-await page.goto('http://localhost:3014', { waitUntil: 'networkidle' })
+await page.goto('http://localhost:3014/player/', { waitUntil: 'networkidle' })
 await page.getByRole('button', { name: 'Start' }).click()
 await page.waitForTimeout(1400)
 await page.evaluate(() => document.querySelectorAll('audio').forEach((a) => (a.muted = true)))

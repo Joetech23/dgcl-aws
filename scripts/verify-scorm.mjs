@@ -19,10 +19,11 @@ async function main() {
   await page.waitForTimeout(2500)
 
   const frame = page.frameLocator('#frame')
-  const rendered = await frame.getByRole('button', { name: 'Start the course' }).isVisible()
+  const start = frame.getByRole('button', { name: 'Start', exact: true })
+  const rendered = await start.isVisible()
   console.log(`  ${rendered ? 'PASS' : 'FAIL'}  SCO renders from a subdirectory`)
 
-  await frame.getByRole('button', { name: 'Start the course' }).click()
+  await start.click()
   await page.waitForTimeout(3000)
 
   const audioOk = await page.evaluate(() => {
@@ -41,6 +42,12 @@ async function main() {
 
   const broken = failed.filter((f) => !/favicon/.test(f))
   console.log(`  ${broken.length === 0 ? 'PASS' : 'FAIL'}  no missing assets${broken.length ? ` — ${broken.slice(0, 3).join(', ')}` : ''}`)
+
+  const tabs = await frame.getByRole('tablist', { name: 'Modules' }).getByRole('tab').count()
+  const m1 = await frame.getByRole('navigation', { name: 'Slides' }).getByRole('button').count()
+  const m2Locked = await frame.getByRole('tab', { name: /^Module 1/ }).getAttribute('aria-disabled')
+  console.log(`  ${tabs === 4 ? 'PASS' : 'FAIL'}  four modules in the package — ${tabs}`)
+  console.log(`  ${m1 === 2 && m2Locked === 'true' ? 'PASS' : 'FAIL'}  new learner starts in the Introduction with Module 1 locked — ${m1} slides, locked=${m2Locked}`)
 
   await page.screenshot({ path: 'shots/scorm-in-lms.png' })
   await browser.close()

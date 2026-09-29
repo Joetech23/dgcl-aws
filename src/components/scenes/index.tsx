@@ -21,6 +21,16 @@ import { EdgeLocationsScene } from './EdgeLocationsScene'
 import { AwsAccountsScene } from './AwsAccountsScene'
 import { AccountFeaturesScene } from './AccountFeaturesScene'
 import { RootAndIamScene } from './RootAndIamScene'
+import { CardsScene } from './CardsScene'
+import { StepsScene } from './StepsScene'
+import { SplitScene } from './SplitScene'
+import { PhotoScene } from './PhotoScene'
+import { OutroScene } from './OutroScene'
+import { ProgrammeTitleScene } from './ProgrammeTitleScene'
+import { ContentsScene } from './ContentsScene'
+import { ModuleTitleScene } from './ModuleTitleScene'
+import { ModuleOutroScene } from './ModuleOutroScene'
+import { CodeScene } from './CodeScene'
 
 export type { SceneProps } from './types'
 
@@ -67,5 +77,26 @@ export function Scene(props: SceneProps) {
       return <AccountFeaturesScene {...props} />
     case 'root-and-iam':
       return <RootAndIamScene {...props} />
+    // generic, data-driven layouts
+    case 'cards':
+      return <CardsScene {...props} />
+    case 'steps':
+      return <StepsScene {...props} />
+    case 'split':
+      return <SplitScene {...props} />
+    case 'photo':
+      return <PhotoScene {...props} />
+    case 'outro':
+      return <OutroScene {...props} />
+    case 'programme-title':
+      return <ProgrammeTitleScene {...props} />
+    case 'contents':
+      return <ContentsScene {...props} />
+    case 'module-title':
+      return <ModuleTitleScene {...props} />
+    case 'module-outro':
+      return <ModuleOutroScene {...props} />
+    case 'code':
+      return <CodeScene {...props} />
   }
 }

@@ -20,9 +20,17 @@ export const CANVAS_H = 540
 export function ScaledStage({
   children,
   className = '',
+  fit = 'contain',
 }: {
   children: ReactNode
   className?: string
+  /**
+   * 'contain' fits inside a box whose height is set from outside (the SCORM
+   * player). 'width' is for a stage in normal page flow, where the box's
+   * height comes from the stage itself: measuring it there would pin the
+   * slide at its first size, so it could shrink but never grow again.
+   */
+  fit?: 'contain' | 'width'
 }) {
   const boxRef = useRef<HTMLDivElement | null>(null)
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 })
@@ -36,7 +44,7 @@ export function ScaledStage({
       // first. When the box has no height constraint (a phone in normal page
       // flow) width decides.
       const byWidth = width
-      const byHeight = height > 0 ? (height * CANVAS_W) / CANVAS_H : Infinity
+      const byHeight = fit === 'contain' && height > 0 ? (height * CANVAS_W) / CANVAS_H : Infinity
       const w = Math.max(0, Math.floor(Math.min(byWidth, byHeight)))
       setSize({ w, h: Math.round((w * CANVAS_H) / CANVAS_W) })
     }
@@ -44,7 +52,7 @@ export function ScaledStage({
     const ro = new ResizeObserver(measure)
     ro.observe(box)
     return () => ro.disconnect()
-  }, [])
+  }, [fit])
 
   const scale = size.w / CANVAS_W
 

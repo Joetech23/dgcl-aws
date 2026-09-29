@@ -5,6 +5,41 @@
 :root {
   color-scheme: light;
   --rail-w: 300px;
+  /* Neutral palette as RGB triples, so Tailwind opacity modifiers work. */
+  --ink: 11 16 32;
+  --slate: 244 246 251;
+  --line: 222 228 240;
+  --mist: 140 153 180;
+  --surface: 255 255 255;
+  --blue: 0 0 153;
+  --blue-electric: 0 0 188;
+}
+
+.dark {
+  color-scheme: dark;
+  --ink: 232 236 247;
+  --slate: 9 14 30;
+  --line: 36 48 76;
+  --mist: 120 135 168;
+  --surface: 16 24 46;
+  /* The deck blue is too dark to read on navy; a lifted blue keeps white
+     button text readable and blue text visible. */
+  --blue: 88 101 255;
+  --blue-electric: 150 162 255;
+}
+
+/* The lesson itself never changes: slides, the player and anything inside
+   them keep the light palette, the way a video looks the same in any room. */
+.dark .slide-canvas,
+.dark .light-scope {
+  color-scheme: light;
+  --ink: 11 16 32;
+  --slate: 244 246 251;
+  --line: 222 228 240;
+  --mist: 140 153 180;
+  --surface: 255 255 255;
+  --blue: 0 0 153;
+  --blue-electric: 0 0 188;
 }
 
 html,
@@ -13,10 +48,14 @@ body {
 }
 
 body {
-  background: #0b1020;
-  color: #0b1020;
+  /* The site is white (navy in dark mode). The players paint their own chrome. */
+  background: rgb(var(--surface));
+  transition: background-color 200ms ease;
+  color: rgb(var(--ink));
   font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Raleway defaults to old-style figures, where 1 reads as a dotless i. */
+  font-variant-numeric: lining-nums;
 }
 
 /* The player chrome is deep DGCL navy; the stage inside it is light. That
@@ -287,5 +326,55 @@ input[type='range'].scrub::-moz-range-thumb {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ---- site ---- */
+
+@keyframes preview-progress {
+  from { width: 0; }
+  to { width: 100%; }
+}
+.preview-progress { animation: preview-progress 5.2s linear forwards; }
+
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+.anim-sheet { animation: sheet-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* Faint blue grid behind the hero, drawn with gradients rather than an image. */
+.site-grid {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 153, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 153, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 40%, transparent 100%);
+}
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-rise, .anim-pop, .anim-fade, .anim-sheet, .preview-progress { animation: none !important; }
+}
+
+/* ---- certificate printing ----
+   "Download PDF" is the browser's print-to-PDF: one landscape page, the
+   certificate edge to edge, nothing else. */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+  html,
+  body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cert-print {
+    width: 297mm;
+    margin: 0 !important;
   }
 }

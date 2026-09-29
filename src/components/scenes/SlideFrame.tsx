@@ -18,7 +18,7 @@ export function SlideFrame({
   eyebrow,
   title,
   titleAccent,
-  sectionLabel = 'AWS Cloud Training · Section 1',
+  sectionLabel = 'AWS Cloud Training · Module 1',
   children,
   chevron = 'right',
   compact = false,

@@ -69,7 +69,7 @@ export function SortIntoBuckets({
   const status = !allPlaced
     ? selected
       ? 'Now choose where it goes.'
-      : `Place all ${spec.chips.length} — tap one to pick it up.`
+      : `Place all ${spec.chips.length}. Tap one to pick it up.`
     : !checked
       ? 'All placed. Check your answers.'
       : `${wrongCount} in the wrong place. Move them and check again.`
@@ -81,7 +81,7 @@ export function SortIntoBuckets({
         <span className="sr-only">Items to place</span>
         {tray.length === 0 ? (
           <p className="px-1 py-2 font-mono text-[11px] text-ink/45">
-            Tray empty — everything is placed.
+            Tray empty. Everything is placed.
           </p>
         ) : (
           <ul className="flex flex-wrap gap-2">

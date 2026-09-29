@@ -36,7 +36,7 @@ export function Frame({
           className={`h-1.5 w-1.5 rounded-full ${done ? 'bg-mint' : 'bg-blue-electric'}`}
         />
         <span className={done ? 'text-mint' : 'text-ink/50'}>
-          {done ? 'Done — the narration will pick up again.' : (status ?? 'Not finished yet.')}
+          {done ? 'Done. The narration will pick up again.' : (status ?? 'Not finished yet.')}
         </span>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import type { Slide } from '@/lib/course/types'
+import { slidesPart2 } from './part2'
 
 /**
  * Slides one through ten, mapped directly to deck slides 1-10.
@@ -13,7 +14,7 @@ const s01: Slide = {
   id: 's01-title',
   navLabel: 'Welcome',
   title: 'AWS Cloud Training',
-  subtitle: 'Section 1 · Amazon Web Services Fundamentals',
+  subtitle: 'Module 1 · Amazon Web Services Fundamentals',
   sourceSlides: [1],
   scene: 'title',
   script: [
@@ -23,11 +24,11 @@ const s01: Slide = {
       holdMs: 200,
     },
     {
-      text: 'This is Section One, Amazon Web Services Fundamentals.',
+      text: 'This is Module One, Amazon Web Services Fundamentals.',
       reveal: 'subtitle',
     },
     {
-      text: 'Across the next ten lessons you will learn what AWS is, what it gives you, who it is for, and where the cloud fits into all of it. Nothing here assumes you have used it before.',
+      text: 'Across this module you will learn what AWS is, what it gives you, who it is for, and where the cloud fits into all of it. Nothing here assumes you have used it before.',
       reveal: 'promise',
     },
     {
@@ -909,6 +910,7 @@ const s20: Slide = {
 export const slides: Slide[] = [
   s01, s02, s03, s04, s05, s06, s07, s08, s09, s10,
   s11, s12, s13, s14, s15, s16, s17, s18, s19, s20,
+  ...slidesPart2,
 ]
 
 export function slideById(id: string): Slide | undefined {

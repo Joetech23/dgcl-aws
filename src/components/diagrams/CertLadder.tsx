@@ -36,7 +36,7 @@ export function CertLadder({ activeId }: { activeId: string | null }) {
       <line x1="18" y1="252" x2="18" y2="30" stroke="#F5871F" strokeWidth="1.5" strokeDasharray="4 4" />
       <path d="M18 24 l-4 8 h8 z" fill="#F5871F" />
       <text x="30" y="276" fontSize="11" className="fill-mist">
-        Cloud Practitioner is the first rung — no experience assumed
+        Cloud Practitioner is the first rung. No experience assumed.
       </text>
     </svg>
   )

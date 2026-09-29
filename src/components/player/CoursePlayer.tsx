@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
-import type { Slide, SlideTiming } from '@/lib/course/types'
+import type { CourseModule, Slide, SlideTiming } from '@/lib/course/types'
 import { useTimeline } from '@/lib/timeline/useTimeline'
 import { Scene } from '@/components/scenes'
 import { Interaction } from '@/components/interactions'
@@ -11,6 +11,7 @@ import { Transport } from './Transport'
 import { ScaledStage } from './ScaledStage'
 import { CaptionBand } from './CaptionBand'
 import { getProgressStore } from '@/lib/progress'
+import { moduleBadge, moduleName, sectionLabel } from '@/lib/course/names'
 
 /** Seconds an activity stays on screen after it is completed. */
 const AUTO_CLOSE_S = 6
@@ -23,10 +24,23 @@ const AUTO_CLOSE_S = 6
  * and the transport. The contents rail is a collapsible sidebar on desktop and
  * a slide-in drawer on phones, so a phone's main view is just video and
  * controls.
+ *
+ * The course is split into modules, switched from tabs in the top bar. Each
+ * module has its own contents and counter, and stays locked until every slide
+ * of the module before it is complete.
  */
-export function CoursePlayer({ slides }: { slides: Slide[] }) {
+export function CoursePlayer({
+  modules,
+  assetBase = './',
+}: {
+  modules: CourseModule[]
+  /** Where public/ is served from: './' inside a SCORM package, '/' on the site. */
+  assetBase?: string
+}) {
   const [started, setStarted] = useState(false)
+  const [moduleIndex, setModuleIndex] = useState(0)
   const [index, setIndex] = useState(0)
+  const [lockNotice, setLockNotice] = useState<string | null>(null)
   const [completed, setCompleted] = useState<Set<string>>(new Set())
   const [timings, setTimings] = useState<Record<string, SlideTiming>>({})
   const [activeModel, setActiveModel] = useState(0)
@@ -34,29 +48,49 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const stageRef = useRef<HTMLDivElement | null>(null)
 
-  const slide = slides[index]
+  const mod = modules[moduleIndex]
+  const slides = mod.slides
+  const slide = slides[Math.min(index, slides.length - 1)]
   const timing = timings[slide.id] ?? null
 
   const completedRef = useRef(completed)
   completedRef.current = completed
 
+  const moduleDone = (m: number) => modules[m].slides.every((s) => completed.has(s.id))
+  const moduleUnlocked = (m: number) => m === 0 || moduleDone(m - 1)
+
+  useEffect(() => {
+    if (!lockNotice) return
+    const t = setTimeout(() => setLockNotice(null), 2800)
+    return () => clearTimeout(t)
+  }, [lockNotice])
+
   /* ---------- progress ---------- */
 
   useEffect(() => {
     const loaded = getProgressStore().load()
-    if (loaded?.completed?.length) setCompleted(new Set(loaded.completed))
-    if (loaded?.bookmark) {
-      const i = slides.findIndex((s) => s.id === loaded.bookmark)
-      if (i >= 0) setIndex(i)
+    const done = new Set(loaded?.completed ?? [])
+    if (done.size) setCompleted(done)
+    if (!loaded?.bookmark) return
+    for (let m = 0; m < modules.length; m++) {
+      const i = modules[m].slides.findIndex((s) => s.id === loaded.bookmark)
+      if (i < 0) continue
+      // Never resume inside a module that is still locked.
+      const unlocked = m === 0 || modules[m - 1].slides.every((s) => done.has(s.id))
+      if (unlocked) {
+        setModuleIndex(m)
+        setIndex(i)
+      }
+      break
     }
-  }, [slides])
+  }, [modules])
 
   /* ---------- timings ---------- */
 
   useEffect(() => {
     let cancelled = false
     if (timings[slide.id]) return
-    fetch(`./audio/${slide.id}.json`)
+    fetch(`${assetBase}audio/${slide.id}.json`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data: SlideTiming | null) => {
         if (!cancelled && data) setTimings((t) => ({ ...t, [slide.id]: data }))
@@ -65,7 +99,7 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
     return () => {
       cancelled = true
     }
-  }, [slide.id, timings])
+  }, [slide.id, timings, assetBase])
 
   /* ---------- the gate ---------- */
 
@@ -87,7 +121,7 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
   }, [slide.id, started])
 
   const timeline = useTimeline({
-    src: `./audio/${slide.id}.mp3`,
+    src: `${assetBase}audio/${slide.id}.mp3`,
     timing,
     gateLine,
     gateSatisfied: gateDone || gateLine < 0,
@@ -103,11 +137,14 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
       next.add(slide.id)
       const store = getProgressStore()
       const progress = { ...store.load(), completed: [...next], bookmark: slide.id }
-      if (next.size >= slides.length) store.finish(progress)
+      // Stale ids from older builds can sit in the set, so count real slides
+      // rather than comparing sizes.
+      const all = modules.every((m) => m.slides.every((s) => next.has(s.id)))
+      if (all) store.finish(progress)
       else store.save(progress)
       return next
     })
-  }, [slide.id, slides.length])
+  }, [slide.id, modules])
 
   const shown = useCallback(
     (id: string) => {
@@ -142,15 +179,58 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
     }
   }, [started, timing, slide.id, play])
 
+  /** Switch module. Refused, with a notice, while the module is locked. */
+  const openModule = useCallback(
+    (m: number, autoplay = false) => {
+      if (m < 0 || m >= modules.length) return
+      const done = completedRef.current
+      const unlocked = m === 0 || modules[m - 1].slides.every((s) => done.has(s.id))
+      if (!unlocked) {
+        setLockNotice(
+          `Finish ${moduleName(modules[m - 1].number)} to unlock ${moduleName(modules[m].number)}`,
+        )
+        return
+      }
+      pause()
+      // Pick up at the first slide not yet finished, so returning to a module
+      // resumes rather than restarts.
+      const first = modules[m].slides.findIndex((s) => !done.has(s.id))
+      const i = first >= 0 ? first : 0
+      autoplayRef.current = autoplay
+      setModuleIndex(m)
+      setIndex(i)
+      const store = getProgressStore()
+      store.save({ ...store.load(), bookmark: modules[m].slides[i].id })
+    },
+    [modules, pause],
+  )
+
   const next = useCallback(() => {
-    autoplayRef.current = true
-    go(index + 1)
-  }, [go, index])
+    if (index < slides.length - 1) {
+      autoplayRef.current = true
+      go(index + 1)
+    } else {
+      openModule(moduleIndex + 1, true)
+    }
+  }, [go, index, slides.length, openModule, moduleIndex])
 
   const prev = useCallback(() => {
+    if (index > 0) {
+      autoplayRef.current = true
+      go(index - 1)
+      return
+    }
+    if (moduleIndex === 0) return
+    // Step back into the previous module at its last slide.
+    const m = moduleIndex - 1
+    const i = modules[m].slides.length - 1
+    pause()
     autoplayRef.current = true
-    go(index - 1)
-  }, [go, index])
+    setModuleIndex(m)
+    setIndex(i)
+    const store = getProgressStore()
+    store.save({ ...store.load(), bookmark: modules[m].slides[i].id })
+  }, [go, index, moduleIndex, modules, pause])
 
   const closeGate = useCallback(() => setGateDismissed(true), [])
 
@@ -173,7 +253,8 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
           setStarted(true)
           setTimeout(() => play(), 60)
         }}
-        slideCount={slides.length}
+        moduleCount={modules.length}
+        lessonCount={modules.reduce((n, m) => n + m.slides.length, 0)}
       />
     )
   }
@@ -190,7 +271,15 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
     if (remaining > 400) setTimeout(() => play(), 250)
   }
 
+  const nextModule = moduleIndex + 1 < modules.length ? modules[moduleIndex + 1] : null
+  // At the end of a finished module, offer the next one right where the eye is.
+  const offerNextModule =
+    nextModule !== null && index === slides.length - 1 && moduleDone(moduleIndex)
+  const gatePill = gateReached && gateDismissed
+  const pillShown = gatePill || offerNextModule
+
   const railProps = {
+    heading: `${moduleName(mod.number)} · ${mod.title}`,
     slides,
     currentIndex: index,
     completed,
@@ -202,7 +291,7 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
   }
 
   return (
-    <div className="flex min-h-[100dvh] bg-ink lg:h-[100dvh]">
+    <div className="light-scope flex min-h-[100dvh] bg-ink lg:h-[100dvh]">
       {/* Desktop sidebar, collapsible */}
       <aside
         className={`chrome hidden shrink-0 border-r border-white/10 transition-[width] duration-300 lg:block ${
@@ -260,6 +349,12 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
 
       <main className="chrome flex min-w-0 flex-1 flex-col">
         <MinimalBar
+          modules={modules}
+          moduleIndex={moduleIndex}
+          unlocked={modules.map((_, m) => moduleUnlocked(m))}
+          done={modules.map((_, m) => moduleDone(m))}
+          onSelectModule={(m) => openModule(m)}
+          lockNotice={lockNotice}
           index={index}
           total={slides.length}
           progressPct={timeline.durationMs ? (timeline.currentMs / timeline.durationMs) * 100 : 0}
@@ -278,6 +373,7 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
               shown={shown}
               currentMs={timeline.currentMs}
               activeModel={activeModel}
+              moduleLabel={sectionLabel(mod.number)}
             />
           </ScaledStage>
         </div>
@@ -299,9 +395,9 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
               timing={timing}
               lineIndex={timeline.lineIndex}
               wordIndex={timeline.wordIndex}
-              className={gateReached && gateDismissed ? 'pr-44 sm:pr-48' : ''}
+              className={pillShown ? 'pr-44 sm:pr-48' : ''}
             />
-            {gateReached && gateDismissed ? (
+            {gatePill ? (
               <button
                 type="button"
                 onClick={() => setGateDismissed(false)}
@@ -309,6 +405,15 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
               >
                 <span className="block h-1.5 w-1.5 rotate-45 bg-blue-deep" />
                 {gateDone ? 'Review activity' : 'Your turn'}
+              </button>
+            ) : offerNextModule && nextModule ? (
+              <button
+                type="button"
+                onClick={() => openModule(moduleIndex + 1, true)}
+                className="anim-pop absolute bottom-2 right-3 inline-flex items-center gap-2 rounded-full bg-gold px-3 py-1.5 font-display text-[12px] font-bold text-blue-deep shadow-stage hover:brightness-110 sm:right-4"
+              >
+                Start {moduleName(nextModule.number)}
+                <span aria-hidden>›</span>
               </button>
             ) : null}
           </div>
@@ -329,8 +434,11 @@ export function CoursePlayer({ slides }: { slides: Slide[] }) {
           onPrev={prev}
           onNext={next}
           onFullscreen={toggleFullscreen}
-          hasPrev={index > 0}
-          hasNext={index < slides.length - 1}
+          hasPrev={index > 0 || moduleIndex > 0}
+          hasNext={
+            index < slides.length - 1 ||
+            (moduleIndex + 1 < modules.length && moduleUnlocked(moduleIndex + 1))
+          }
         />
 
         <PlayerFooter />
@@ -347,14 +455,26 @@ function CloseIcon() {
   )
 }
 
-/** The slim bar above the stage: contents toggle, progress dots, counter. */
+/** The slim bar above the stage: contents toggle, module tabs, dots, counter. */
 function MinimalBar({
+  modules,
+  moduleIndex,
+  unlocked,
+  done,
+  onSelectModule,
+  lockNotice,
   index,
   total,
   progressPct,
   contentsOpen,
   onToggleContents,
 }: {
+  modules: CourseModule[]
+  moduleIndex: number
+  unlocked: boolean[]
+  done: boolean[]
+  onSelectModule: (m: number) => void
+  lockNotice: string | null
   index: number
   total: number
   progressPct: number
@@ -362,7 +482,7 @@ function MinimalBar({
   onToggleContents: () => void
 }) {
   return (
-    <div className="shrink-0 border-b border-white/10 bg-gradient-to-b from-black/30 to-transparent">
+    <div className="relative z-30 shrink-0 border-b border-white/10 bg-gradient-to-b from-black/30 to-transparent">
       <div className="flex items-center gap-3 px-3 py-2 sm:px-4">
         <button
           type="button"
@@ -375,6 +495,14 @@ function MinimalBar({
             <path d="M3 4h10M3 8h10M3 12h10" />
           </svg>
         </button>
+
+        <ModuleTabs
+          modules={modules}
+          current={moduleIndex}
+          unlocked={unlocked}
+          done={done}
+          onSelect={onSelectModule}
+        />
 
         <div className="ml-auto flex items-center gap-3">
           <div className="hidden items-center gap-1.5 sm:flex">
@@ -400,6 +528,91 @@ function MinimalBar({
           style={{ width: `${Math.min(100, progressPct)}%` }}
         />
       </div>
+      {lockNotice ? (
+        <div
+          role="status"
+          className="anim-rise absolute left-1/2 top-full mt-2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-md border border-gold/50 bg-blue-deep px-3 py-1.5 font-display text-[12px] font-semibold text-white shadow-stage"
+        >
+          <LockIcon className="text-gold" />
+          {lockNotice}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function LockIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden>
+      <rect x="3" y="7" width="10" height="7" rx="1.5" />
+      <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
+    </svg>
+  )
+}
+
+/**
+ * Module tabs.
+ *
+ * A locked module is still a real, focusable button: clicking it explains
+ * what unlocks it, rather than doing nothing the way a disabled control would.
+ */
+function ModuleTabs({
+  modules,
+  current,
+  unlocked,
+  done,
+  onSelect,
+}: {
+  modules: CourseModule[]
+  current: number
+  unlocked: boolean[]
+  done: boolean[]
+  onSelect: (m: number) => void
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Modules"
+      className="flex min-w-0 items-center gap-0.5 rounded-md border border-white/10 bg-black/25 p-0.5"
+    >
+      {modules.map((m, i) => {
+        const active = i === current
+        const locked = !unlocked[i]
+        return (
+          <button
+            key={m.id}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            aria-disabled={locked}
+            aria-label={`${moduleName(m.number)}: ${m.title}${locked ? ' (locked)' : ''}`}
+            onClick={() => onSelect(i)}
+            title={locked ? `Finish ${moduleName(modules[i - 1].number)} to unlock` : m.title}
+            className={`flex items-center gap-1 rounded px-2 py-1 font-display text-[12px] font-semibold transition sm:gap-1.5 sm:px-2.5 ${
+              active
+                ? 'bg-gold text-blue-deep'
+                : locked
+                  ? 'cursor-not-allowed text-white/35 hover:bg-white/5'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            {locked ? (
+              <LockIcon />
+            ) : done[i] && !active ? (
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.4" className="text-mint" aria-hidden>
+                <path d="M3 8.4l3.2 3.2L13 4.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : null}
+            <span className="whitespace-nowrap">
+              <span className="sm:hidden">{m.number === 0 ? 'Intro' : `M${m.number}`}</span>
+              <span className="hidden sm:inline">{moduleName(m.number)}</span>
+            </span>
+            <span className="hidden whitespace-nowrap font-normal opacity-80 md:inline">
+              · {m.short}
+            </span>
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -411,7 +624,7 @@ function MinimalBar({
  * after a few seconds, with a visible countdown so the result does not vanish
  * without warning. A closed activity can be reopened from the gold pill.
  */
-function GateDock({
+export function GateDock({
   slideId,
   interaction,
   gateDone,
@@ -498,9 +711,17 @@ function PlayerFooter() {
   )
 }
 
-function Poster({ onStart, slideCount }: { onStart: () => void; slideCount: number }) {
+function Poster({
+  onStart,
+  moduleCount,
+  lessonCount,
+}: {
+  onStart: () => void
+  moduleCount: number
+  lessonCount: number
+}) {
   return (
-    <div className="chrome relative flex h-[100dvh] items-center justify-center overflow-hidden px-6">
+    <div className="light-scope chrome relative flex h-[100dvh] items-center justify-center overflow-hidden px-6">
       <div
         aria-hidden
         className="absolute inset-0 opacity-[0.16]"
@@ -527,10 +748,10 @@ function Poster({ onStart, slideCount }: { onStart: () => void; slideCount: numb
             AWS Cloud Training
           </h1>
           <p className="anim-rise mt-3 font-display text-[clamp(0.95rem,1.6vw,1.25rem)] font-semibold text-gold">
-            Section 1 · {slideCount} lessons
+            CO2/CO3 · Introduction + {moduleCount - 1} modules · {lessonCount} lessons
           </p>
           <p className="anim-rise mt-2 text-[15px] leading-relaxed text-white/65">
-            Amazon Web Services Fundamentals
+            DGCL Digital Cloud Academy
           </p>
 
           <button

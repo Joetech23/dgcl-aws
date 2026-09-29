@@ -51,7 +51,7 @@ export function AwsAccountsScene({ shown, compact }: SceneProps) {
           visible={shown('many')}
           eyebrow="Isolation"
           title="Many per company"
-          body="Dev, staging, production — a hard boundary between each. A mistake in dev cannot damage production."
+          body="Dev, staging, production: a hard boundary between each. A mistake in dev cannot damage production."
           tint="#F5871F"
           span
           icon={

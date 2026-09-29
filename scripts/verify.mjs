@@ -10,7 +10,7 @@
  */
 import { chromium } from 'playwright'
 
-const URL = 'http://localhost:3014'
+const URL = 'http://localhost:3014/player/'
 const results = []
 
 function check(name, pass, detail = '') {

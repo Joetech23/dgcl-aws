@@ -9,23 +9,28 @@ import type { Config } from 'tailwindcss'
  */
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
+  // Dark mode is a class on <html>, set by the theme toggle. The neutral
+  // colours below are CSS variables (globals.css) so one class swaps them all.
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         blue: {
-          DEFAULT: '#000099', // 56 uses in the deck — the dominant brand colour
+          DEFAULT: 'rgb(var(--blue) / <alpha-value>)', // #000099: 56 uses in the deck
           deep: '#000066', // 34 uses — logo ground
           darker: '#002060',
-          electric: '#0000BC', // matches the live site
+          electric: 'rgb(var(--blue-electric) / <alpha-value>)', // #0000BC, the live site
           lift: '#1B1AFF',
         },
         gold: '#FFC000', // the deck's accent, and our lead accent
         ember: '#F5871F', // used sparingly; the incumbent's chrome leans on it
-        ink: '#0B1020',
-        slate: '#F4F6FB',
-        mist: '#8C99B4',
-        line: '#DEE4F0',
+        ink: 'rgb(var(--ink) / <alpha-value>)',
+        slate: 'rgb(var(--slate) / <alpha-value>)',
+        mist: 'rgb(var(--mist) / <alpha-value>)',
+        line: 'rgb(var(--line) / <alpha-value>)',
         paper: '#FFFFFF',
+        /** Cards and page surfaces: white in light mode, deep navy in dark. */
+        surface: 'rgb(var(--surface) / <alpha-value>)',
         mint: '#12B981',
         rose: '#E5484D',
       },

@@ -8,8 +8,13 @@ import { chromium } from 'playwright'
 const browser = await chromium.launch({ channel: 'chrome' })
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
 // Fresh progress, so slide 2 is not already marked complete from earlier runs.
-await page.goto('http://localhost:3014', { waitUntil: 'networkidle' })
-await page.evaluate(() => localStorage.clear())
+await page.goto('http://localhost:3014/player/', { waitUntil: 'networkidle' })
+await page.evaluate(() =>
+  localStorage.setItem(
+    'dgcl-aws-section-01',
+    JSON.stringify({ completed: ['s00-programme', 's00-contents'], bookmark: 's01-title', score: null, track: null }),
+  ),
+)
 await page.reload({ waitUntil: 'networkidle' })
 await page.getByRole('button', { name: 'Start' }).click()
 await page.waitForTimeout(1000)

@@ -49,7 +49,7 @@ export function PathChoice({
       </div>
       {chosen ? (
         <p className="mt-3 font-mono text-[11px] text-mint">
-          Noted — the course will lean on examples that suit you.
+          Noted. The course will lean on examples that suit you.
         </p>
       ) : null}
     </Frame>

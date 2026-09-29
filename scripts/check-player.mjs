@@ -12,7 +12,7 @@
 import { chromium } from 'playwright'
 import { mkdir } from 'node:fs/promises'
 
-const URL = 'http://localhost:3014'
+const URL = 'http://localhost:3014/player/'
 const results = []
 const check = (name, pass, detail = '') => {
   results.push(pass)
@@ -40,6 +40,14 @@ const measure = (page) =>
 
 async function openCourse(page) {
   await page.goto(URL, { waitUntil: 'networkidle' })
+  // These checks exercise Module 2, which only opens once Module 1 is done.
+  await page.evaluate(() =>
+    localStorage.setItem(
+      'dgcl-aws-section-01',
+      JSON.stringify({ completed: ['s00-programme', 's00-contents'], bookmark: 's01-title', score: null, track: null }),
+    ),
+  )
+  await page.reload({ waitUntil: 'networkidle' })
   await page.getByRole('button', { name: 'Start' }).click()
   await page.waitForTimeout(1200)
   await page.evaluate(() => document.querySelectorAll('audio').forEach((a) => (a.muted = true)))

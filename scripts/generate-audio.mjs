@@ -17,7 +17,7 @@
  * Swapping to ElevenLabs later means replacing this file. Nothing in the app
  * changes — it only ever reads the two artefacts above.
  */
-import { mkdir, writeFile, readFile, access } from 'node:fs/promises'
+import { mkdir, writeFile, readFile, readdir, access } from 'node:fs/promises'
 import path from 'node:path'
 import { EdgeTTS } from 'edge-tts-universal'
 
@@ -41,10 +41,13 @@ const ticksToMs = (t) => Math.round(t / 10_000)
  * fixed by src/lib/course/types.ts and a mismatch fails loudly below.
  */
 async function readSlides() {
-  const src = await readFile(
-    path.join(ROOT, 'src', 'content', 'slides', 'index.ts'),
-    'utf8',
-  )
+  // Every file in the slides folder, not just index.ts: the content is split
+  // across several files and a missed file means silent slides.
+  const dir = path.join(ROOT, 'src', 'content', 'slides')
+  const names = (await readdir(dir)).filter((f) => f.endsWith('.ts')).sort()
+  const src = (
+    await Promise.all(names.map((f) => readFile(path.join(dir, f), 'utf8')))
+  ).join('\n')
 
   const slides = []
   const slideRe = /id:\s*'([^']+)',\s*\n\s*navLabel:/g
@@ -107,10 +110,41 @@ function mapLines(lines, words, durationMs) {
   return out
 }
 
+/**
+ * Synthesise with a timeout and retries.
+ *
+ * The Edge service sometimes drops the connection mid-request without an
+ * error. The pending promise then never settles, nothing else keeps Node's
+ * event loop alive, and the script exits silently halfway through a module.
+ * The timeout both keeps the process alive and turns that silent drop into a
+ * retry.
+ */
+async function synthesizeWithRetry(text, attempts = 4) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    let timer
+    try {
+      const tts = new EdgeTTS(text, VOICE, { rate: RATE })
+      return await Promise.race([
+        tts.synthesize(),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error('timed out after 90s')), 90_000)
+        }),
+      ])
+    } catch (err) {
+      if (attempt === attempts) throw err
+      const wait = 2000 * attempt
+      process.stdout.write(`retry ${attempt} (${err.message}) … `)
+      await new Promise((r) => setTimeout(r, wait))
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+}
+
 async function main() {
   await mkdir(OUT, { recursive: true })
   const slides = await readSlides()
-  if (!slides.length) throw new Error('No slides parsed from src/content/slides/index.ts')
+  if (!slides.length) throw new Error('No slides parsed from src/content/slides/')
 
   console.log(`Voice: ${VOICE} (rate ${RATE})\n`)
 
@@ -124,8 +158,7 @@ async function main() {
     const text = slide.lines.join(' ')
     process.stdout.write(`· ${slide.id} — ${slide.lines.length} lines … `)
 
-    const tts = new EdgeTTS(text, VOICE, { rate: RATE })
-    const { audio, subtitle } = await tts.synthesize()
+    const { audio, subtitle } = await synthesizeWithRetry(text)
 
     const buf = Buffer.from(await audio.arrayBuffer())
     await writeFile(mp3Path, buf)

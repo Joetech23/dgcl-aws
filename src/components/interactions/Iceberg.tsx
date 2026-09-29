@@ -16,7 +16,7 @@ const ON_PREM = [
 
 const CLOUD = [
   { y: 214, label: 'Implementation & training' },
-  { y: 252, label: 'Nothing else — the provider carries the rest' },
+  { y: 252, label: 'Nothing else. The provider carries the rest' },
 ]
 
 const TOP = 170

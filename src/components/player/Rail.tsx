@@ -11,6 +11,7 @@ import type { Slide, SlideTiming } from '@/lib/course/types'
  * the sentence rather than hunting with the scrubber.
  */
 export function Rail({
+  heading,
   slides,
   currentIndex,
   completed,
@@ -23,6 +24,8 @@ export function Rail({
   onSelectSlide,
   onSeek,
 }: {
+  /** Which module these slides belong to. */
+  heading: string
   slides: Slide[]
   currentIndex: number
   completed: Set<string>
@@ -35,6 +38,15 @@ export function Rail({
   onSelectSlide: (i: number) => void
   onSeek: (ms: number) => void
 }) {
+  const [tab, setTab] = useState<'contents' | 'transcript'>('contents')
+  const activeLineRef = useRef<HTMLButtonElement | null>(null)
+
+  useEffect(() => {
+    if (tab === 'transcript') {
+      activeLineRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  }, [lineIndex, tab])
+
   if (collapsed) {
     return (
       <nav aria-label="Slides" className="flex h-full flex-col items-center gap-1 py-3">
@@ -73,15 +85,6 @@ export function Rail({
       </nav>
     )
   }
-  const [tab, setTab] = useState<'contents' | 'transcript'>('contents')
-  const activeLineRef = useRef<HTMLButtonElement | null>(null)
-
-  useEffect(() => {
-    if (tab === 'transcript') {
-      activeLineRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-    }
-  }, [lineIndex, tab])
-
   return (
     <div className="flex h-full flex-col">
       <div className="flex shrink-0 gap-1 border-b border-white/10 px-3 pt-3">
@@ -107,7 +110,7 @@ export function Rail({
       {tab === 'contents' ? (
         <nav aria-label="Slides" className="rail-scroll flex-1 overflow-y-auto px-2 py-3">
           <p className="px-2 pb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-            Section 1 · AWS Fundamentals
+            {heading}
           </p>
           <ol className="space-y-0.5">
             {slides.map((s, i) => {

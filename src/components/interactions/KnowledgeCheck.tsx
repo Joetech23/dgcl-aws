@@ -114,7 +114,7 @@ export function KnowledgeCheck({
         </button>
       ) : (
         <p className={`mt-3 font-mono text-[11.5px] ${isCorrect ? 'text-mint' : 'text-blue-electric'}`}>
-          {isCorrect ? 'Correct.' : 'Not quite — the reasoning is above.'}
+          {isCorrect ? 'Correct.' : 'Not quite. The reasoning is above.'}
         </p>
       )}
     </div>

@@ -35,14 +35,14 @@ const mono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'AWS Fundamentals · Section 1 | DGCL Digital Cloud Academy',
+  title: 'AWS Cloud Training CO2/CO3 | DGCL Digital Cloud Academy',
   description:
     'An interactive introduction to Amazon Web Services. Built for people coming to the cloud for the first time.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   )
