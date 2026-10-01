@@ -25,7 +25,7 @@ export function CodeScene({ slide, shown, moduleLabel }: SceneProps) {
   return (
     <SlideFrame title={slide.title} titleAccent={slide.subtitle} sectionLabel={moduleLabel} chevron="none">
       {data.intro && shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[92%] text-[clamp(0.62rem,1.33cqw,0.82rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[92%] text-[clamp(0.74rem,1.6cqw,0.98rem)] leading-relaxed text-ink/65">
           {data.intro}
         </p>
       ) : null}
@@ -37,9 +37,9 @@ export function CodeScene({ slide, shown, moduleLabel }: SceneProps) {
             <span className="h-2 w-2 rounded-full bg-rose/80" />
             <span className="h-2 w-2 rounded-full bg-gold/80" />
             <span className="h-2 w-2 rounded-full bg-mint/80" />
-            <span className="ml-2 font-mono text-[9px] text-white/40">{data.filename ?? 'policy.json'}</span>
+            <span className="ml-2 font-mono text-[11px] text-white/40">{data.filename ?? 'policy.json'}</span>
           </div>
-          <pre className="pt-1 font-mono text-[clamp(0.5rem,1.15cqw,0.7rem)] leading-[1.55]">
+          <pre className="pt-1 font-mono text-[clamp(0.6rem,1.38cqw,0.84rem)] leading-[1.55]">
             {data.code.map((line, i) => {
               const n = i + 1
               const on = inActive(n)
@@ -50,7 +50,7 @@ export function CodeScene({ slide, shown, moduleLabel }: SceneProps) {
                   style={{ boxShadow: on ? 'inset 3px 0 0 #FFC000' : undefined }}
                 >
                   <span className="w-7 shrink-0 select-none pr-2 text-right text-white/25">{n}</span>
-                  <span className={active && !on ? 'opacity-45' : undefined}>
+                  <span className={`min-w-0 whitespace-pre-wrap [overflow-wrap:anywhere] ${active && !on ? 'opacity-45' : ''}`}>
                     <Highlighted line={line} />
                   </span>
                 </div>
@@ -74,11 +74,11 @@ export function CodeScene({ slide, shown, moduleLabel }: SceneProps) {
                   isActive ? 'border-gold bg-gold/10 shadow-lift' : 'border-line bg-white'
                 }`}
               >
-                <p className="font-mono text-[9px] text-ink/40">
+                <p className="font-mono text-[11px] text-ink/40">
                   {h.lines[1] !== h.lines[0] ? `lines ${h.lines[0]}-${h.lines[1]}` : `line ${h.lines[0]}`}
                 </p>
-                <p className="font-display text-[clamp(0.62rem,1.3cqw,0.82rem)] font-bold text-blue-deep">{h.label}</p>
-                <p className="text-[clamp(0.52rem,1.1cqw,0.68rem)] leading-snug text-ink/65">{h.body}</p>
+                <p className="font-display text-[clamp(0.74rem,1.56cqw,0.98rem)] font-bold text-blue-deep">{h.label}</p>
+                <p className="text-[clamp(0.62rem,1.32cqw,0.82rem)] leading-snug text-ink/65">{h.body}</p>
               </li>
             )
           })}
@@ -86,7 +86,7 @@ export function CodeScene({ slide, shown, moduleLabel }: SceneProps) {
       </div>
 
       {data.footnote && shown(data.footnote.id) ? (
-        <p className="anim-rise mt-2 border-l-[3px] border-gold pl-3 text-[clamp(0.6rem,1.26cqw,0.78rem)] leading-relaxed text-ink/70">
+        <p className="anim-rise mt-2 border-l-[3px] border-gold pl-3 text-[clamp(0.72rem,1.51cqw,0.94rem)] leading-relaxed text-ink/70">
           {data.footnote.text}
         </p>
       ) : null}

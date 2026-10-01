@@ -43,7 +43,7 @@ export function ServiceModelsScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="IaaS, PaaS," titleAccent="SaaS" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.82rem,1.76cqw,1.06rem)] leading-relaxed text-ink/65">
           How much of the stack the provider looks after, and how much stays with you.
         </p>
       ) : null}
@@ -60,13 +60,13 @@ export function ServiceModelsScene({ shown, compact }: SceneProps) {
                 >
                   <div className="mb-1.5 flex items-baseline gap-2">
                     <span
-                      className="font-display text-[clamp(0.78rem,1.89cqw,1.05rem)] font-extrabold"
+                      className="font-display text-[clamp(0.87rem,2.12cqw,1.18rem)] font-extrabold"
                       style={{ color: m.tint }}
                     >
                       {m.label}
                     </span>
-                    <span className="font-mono text-[10px] text-ink/50">{m.full}</span>
-                    <span className="ml-auto rounded-full bg-slate px-2 py-0.5 font-mono text-[9.5px] text-ink/60">
+                    <span className="font-mono text-[12px] text-ink/50">{m.full}</span>
+                    <span className="ml-auto rounded-full bg-slate px-2 py-0.5 font-mono text-[11.5px] text-ink/60">
                       e.g. {m.example}
                     </span>
                   </div>
@@ -76,7 +76,7 @@ export function ServiceModelsScene({ shown, compact }: SceneProps) {
                       return (
                         <div
                           key={layer}
-                          className={`flex flex-1 flex-col items-center rounded py-1 text-[8.5px] font-semibold uppercase tracking-tight transition-colors ${
+                          className={`flex flex-1 flex-col items-center rounded py-1 text-[10.5px] font-semibold uppercase tracking-tight transition-colors ${
                             yours
                               ? 'text-white'
                               : 'bg-slate text-ink/40 ring-1 ring-inset ring-line'
@@ -85,7 +85,7 @@ export function ServiceModelsScene({ shown, compact }: SceneProps) {
                         >
                           <span>{layer}</span>
                           <span
-                            className={`mt-0.5 font-mono text-[7.5px] ${
+                            className={`mt-0.5 font-mono text-[9.5px] ${
                               yours ? 'text-gold' : 'text-ink/30'
                             }`}
                           >

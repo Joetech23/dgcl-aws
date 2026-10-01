@@ -72,7 +72,7 @@ export function ModuleTitleScene({ slide, shown }: SceneProps) {
             {data.points.map((p) => (
               <li
                 key={p}
-                className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[clamp(0.55rem,1.3cqw,0.78rem)] font-semibold text-white"
+                className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[clamp(0.66rem,1.56cqw,0.94rem)] font-semibold text-white"
               >
                 {p}
               </li>

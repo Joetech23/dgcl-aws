@@ -53,7 +53,7 @@ async function main() {
   await page.waitForTimeout(1200)
 
   console.log('\nFresh start')
-  check('four module tabs', (await page.getByRole('tablist', { name: 'Modules' }).getByRole('tab').count()) === 4)
+  check('five module tabs', (await page.getByRole('tablist', { name: 'Modules' }).getByRole('tab').count()) === 5)
   check('opens in the Introduction', (await tab(page, 1).getAttribute('aria-selected')) === 'true')
   check('the Introduction has its own contents', (await slideCount(page)) === 2, `${await slideCount(page)} slides`)
   check('Module 1 is locked', (await tab(page, 2).getAttribute('aria-disabled')) === 'true')

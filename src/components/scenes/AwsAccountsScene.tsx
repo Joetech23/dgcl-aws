@@ -14,7 +14,7 @@ export function AwsAccountsScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="All About" titleAccent="AWS Accounts" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.82rem,1.76cqw,1.06rem)] leading-relaxed text-ink/65">
           Everything you do on AWS happens inside an account. Two minutes on what one is.
         </p>
       ) : null}
@@ -68,7 +68,7 @@ export function AwsAccountsScene({ shown, compact }: SceneProps) {
       </div>
 
       {shown('environment') ? (
-        <p className="anim-rise mt-3 border-l-[3px] border-gold pl-3 font-display text-[clamp(0.7rem,1.47cqw,0.9rem)] font-semibold text-blue-deep">
+        <p className="anim-rise mt-3 border-l-[3px] border-gold pl-3 font-display text-[clamp(0.84rem,1.76cqw,1.08rem)] font-semibold text-blue-deep">
           "Account" here means an environment, not a person.
         </p>
       ) : null}
@@ -114,13 +114,13 @@ function Fact({
         </svg>
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: tint }}>
+        <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: tint }}>
           {eyebrow}
         </p>
-        <h3 className="font-display text-[clamp(0.78rem,1.68cqw,0.95rem)] font-bold text-blue-deep">
+        <h3 className="font-display text-[clamp(0.87rem,1.88cqw,1.06rem)] font-bold text-blue-deep">
           {title}
         </h3>
-        <p className="mt-0.5 text-[clamp(0.62rem,1.26cqw,0.75rem)] leading-snug text-ink/60">
+        <p className="mt-0.5 text-[clamp(0.74rem,1.51cqw,0.9rem)] leading-snug text-ink/60">
           {body}
         </p>
       </div>

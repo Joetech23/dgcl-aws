@@ -76,7 +76,7 @@ export function ServiceFamiliesScene({ shown, compact }: SceneProps) {
       titleAccent="four families"
      compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[70%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/60">
+        <p className="anim-rise mt-1 max-w-[70%] text-[clamp(0.82rem,1.76cqw,1.06rem)] leading-relaxed text-ink/60">
           Two hundred services sounds a lot. Almost all of them are one of these four.
         </p>
       ) : null}
@@ -102,11 +102,11 @@ export function ServiceFamiliesScene({ shown, compact }: SceneProps) {
                     </svg>
                   </div>
                   <div>
-                    <p className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink/45">
+                    <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.14em] text-ink/45">
                       0{i + 1}
                     </p>
                     <h3
-                      className="font-display text-[clamp(0.8rem,1.82cqw,1.05rem)] font-bold leading-tight"
+                      className="font-display text-[clamp(0.9rem,2.04cqw,1.18rem)] font-bold leading-tight"
                       style={{ color: f.tint }}
                     >
                       {f.label}
@@ -125,7 +125,7 @@ export function ServiceFamiliesScene({ shown, compact }: SceneProps) {
                   {f.services.map((s) => (
                     <li
                       key={s}
-                      className="flex items-center gap-1.5 font-mono text-[10.5px] text-ink/65"
+                      className="flex items-center gap-1.5 font-mono text-[12.5px] text-ink/65"
                     >
                       <span className="text-gold">›</span>
                       <span>{s}</span>

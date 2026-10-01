@@ -49,7 +49,7 @@ export function DeploymentModelsScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="The Different Types of" titleAccent="Cloud Computing" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[80%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/60">
+        <p className="anim-rise mt-1 max-w-[80%] text-[clamp(0.82rem,1.76cqw,1.06rem)] leading-relaxed text-ink/60">
           Which model a business chooses comes down to what the law demands and what they can afford to hand over.
         </p>
       ) : null}
@@ -70,20 +70,20 @@ export function DeploymentModelsScene({ shown, compact }: SceneProps) {
                 >                  <div className="flex items-center gap-2">
                     <LockCloud color={m.tint} />
                     <span
-                      className="font-display text-[clamp(0.8rem,1.96cqw,1.1rem)] font-bold"
+                      className="font-display text-[clamp(0.9rem,2.2cqw,1.23rem)] font-bold"
                       style={{ color: m.tint }}
                     >
                       {m.name}
                     </span>
                   </div>
-                  <p className="mt-1.5 text-[clamp(0.63rem,1.33cqw,0.78rem)] leading-snug text-ink/75">
+                  <p className="mt-1.5 text-[clamp(0.76rem,1.6cqw,0.94rem)] leading-snug text-ink/75">
                     {m.line}
                   </p>
                   <div
                     className="my-2 h-px w-full"
                     style={{ background: `linear-gradient(90deg, ${m.tint}55, transparent)` }}
                   />
-                  <p className="text-[clamp(0.55rem,1.15cqw,0.68rem)] leading-snug text-ink/50">
+                  <p className="text-[clamp(0.66rem,1.38cqw,0.82rem)] leading-snug text-ink/50">
                     {m.tag}
                   </p>
                 </div>

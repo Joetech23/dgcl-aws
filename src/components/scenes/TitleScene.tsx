@@ -65,7 +65,7 @@ export function TitleScene({ shown }: SceneProps) {
           priority
         />
         <span aria-hidden className="h-4 w-px bg-white/20" />
-        <span className="font-display text-[clamp(0.62rem,1.54cqw,0.88rem)] font-semibold text-white/85">
+        <span className="font-display text-[clamp(0.74rem,1.85cqw,1.06rem)] font-semibold text-white/85">
           AWS Cloud Training · Module 1
         </span>
         <span className="ml-auto h-0.5 w-16 bg-gold" />
@@ -103,14 +103,14 @@ export function TitleScene({ shown }: SceneProps) {
             <p className="font-display text-[clamp(0.7rem,2.8cqw,1.55rem)] font-bold text-gold">
               Module 1
             </p>
-            <p className="mt-0.5 font-display text-[clamp(0.55rem,2.24cqw,1.25rem)] font-semibold text-gold/90">
+            <p className="mt-0.5 font-display text-[clamp(0.62rem,2.51cqw,1.4rem)] font-semibold text-gold/90">
               AWS Web Services Fundamentals
             </p>
           </div>
         ) : null}
 
         {shown('promise') ? (
-          <p className="anim-rise mt-4 max-w-[46%] font-body text-[clamp(0.72rem,1.61cqw,0.95rem)] leading-relaxed text-white/75">
+          <p className="anim-rise mt-4 max-w-[46%] font-body text-[clamp(0.86rem,1.93cqw,1.14rem)] leading-relaxed text-white/75">
             Forty short lessons on what AWS is, what it gives you, and how it fits into the
             work you already do.
           </p>

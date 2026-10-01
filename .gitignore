@@ -7,3 +7,5 @@ next-env.d.ts
 .env*.local
 scorm-test
 .next-scorm
+.next-test
+.next-cpanel

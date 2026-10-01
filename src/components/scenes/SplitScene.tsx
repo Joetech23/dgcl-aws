@@ -15,7 +15,7 @@ export function SplitScene({ slide, shown, moduleLabel }: SceneProps) {
   return (
     <SlideFrame title={slide.title} titleAccent={slide.subtitle} sectionLabel={moduleLabel}>
       {data.intro && shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[88%] text-[clamp(0.66rem,1.4cqw,0.85rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[88%] text-[clamp(0.79rem,1.68cqw,1.02rem)] leading-relaxed text-ink/65">
           {data.intro}
         </p>
       ) : null}
@@ -28,7 +28,7 @@ export function SplitScene({ slide, shown, moduleLabel }: SceneProps) {
             style={{ borderColor: col.tint }}
           >
             <p
-              className="mb-2 font-display text-[clamp(0.7rem,1.47cqw,0.92rem)] font-bold"
+              className="mb-2 font-display text-[clamp(0.84rem,1.76cqw,1.1rem)] font-bold"
               style={{ color: col.tint }}
             >
               {col.title}
@@ -43,11 +43,11 @@ export function SplitScene({ slide, shown, moduleLabel }: SceneProps) {
                       style={{ background: col.tint }}
                     />
                     <span className="min-w-0">
-                      <span className="font-display text-[clamp(0.6rem,1.26cqw,0.78rem)] font-bold text-blue-deep">
+                      <span className="font-display text-[clamp(0.72rem,1.51cqw,0.94rem)] font-bold text-blue-deep">
                         {item.label}
                       </span>
                       {item.body ? (
-                        <span className="block text-[clamp(0.55rem,1.12cqw,0.7rem)] leading-snug text-ink/60">
+                        <span className="block text-[clamp(0.66rem,1.34cqw,0.84rem)] leading-snug text-ink/60">
                           {item.body}
                         </span>
                       ) : null}
@@ -66,7 +66,7 @@ export function SplitScene({ slide, shown, moduleLabel }: SceneProps) {
       </div>
 
       {data.footnote && shown(data.footnote.id) ? (
-        <p className="anim-rise mt-2 border-l-[3px] border-gold pl-3 text-[clamp(0.6rem,1.26cqw,0.78rem)] leading-relaxed text-ink/70">
+        <p className="anim-rise mt-2 border-l-[3px] border-gold pl-3 text-[clamp(0.72rem,1.51cqw,0.94rem)] leading-relaxed text-ink/70">
           {data.footnote.text}
         </p>
       ) : null}

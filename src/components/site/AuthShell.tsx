@@ -49,14 +49,24 @@ export function Field({
   hint,
   ...input
 }: React.InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
+  // The hint sits outside the label and is linked with aria-describedby, so
+  // it is read as help text rather than as part of the field's name.
+  const hintId = hint ? `${input.name ?? label.replace(/\W+/g, '-').toLowerCase()}-hint` : undefined
   return (
-    <label className="block">
-      <span className="font-display text-[13.5px] font-bold text-ink">{label}</span>
-      <input
-        {...input}
-        className="mt-1.5 block h-12 w-full rounded-xl border border-line bg-surface px-3.5 text-[16px] text-ink outline-none transition placeholder:text-ink/35 focus:border-blue focus:ring-4 focus:ring-blue/10"
-      />
-      {hint ? <span className="mt-1.5 block text-[12.5px] text-ink/50">{hint}</span> : null}
-    </label>
+    <div>
+      <label className="block">
+        <span className="font-display text-[13.5px] font-bold text-ink">{label}</span>
+        <input
+          {...input}
+          aria-describedby={hintId}
+          className="mt-1.5 block h-12 w-full rounded-xl border border-line bg-surface px-3.5 text-[16px] text-ink outline-none transition placeholder:text-ink/35 focus:border-blue focus:ring-4 focus:ring-blue/10"
+        />
+      </label>
+      {hint ? (
+        <span id={hintId} className="mt-1.5 block text-[12.5px] text-ink/50">
+          {hint}
+        </span>
+      ) : null}
+    </div>
   )
 }

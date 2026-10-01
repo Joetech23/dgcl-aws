@@ -14,7 +14,7 @@ export function EdgeLocationsScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="Edge Locations" titleAccent="Content close to your users" compact={compact}>
       <div className="mt-2 grid flex-1 grid-cols-[0.95fr_1fr] gap-4">
-        <div className="space-y-2 text-[clamp(0.62rem,1.33cqw,0.78rem)] leading-snug text-ink/70">
+        <div className="space-y-2 text-[clamp(0.74rem,1.6cqw,0.94rem)] leading-snug text-ink/70">
           {shown('intro') ? (
             <p className="anim-rise">
               Points of presence in hundreds of cities. They exist for one reason.

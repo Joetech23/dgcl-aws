@@ -378,3 +378,11 @@ input[type='range'].scrub::-moz-range-thumb {
     margin: 0 !important;
   }
 }
+
+/* ---- the player's typeface ----
+   Slides, captions and activities use Sora (headings keep Montserrat through
+   .font-display). Set on the canvas and on both players' outer frames. */
+.slide-canvas,
+.light-scope {
+  font-family: var(--font-slide), system-ui, sans-serif;
+}

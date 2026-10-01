@@ -15,7 +15,7 @@ export function StepsScene({ slide, shown, moduleLabel }: SceneProps) {
   return (
     <SlideFrame title={slide.title} titleAccent={slide.subtitle} sectionLabel={moduleLabel}>
       {data.intro && shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[88%] text-[clamp(0.66rem,1.4cqw,0.85rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[88%] text-[clamp(0.79rem,1.68cqw,1.02rem)] leading-relaxed text-ink/65">
           {data.intro}
         </p>
       ) : null}
@@ -46,7 +46,7 @@ export function StepsScene({ slide, shown, moduleLabel }: SceneProps) {
           return (
             <div key={s.id} className="relative z-10 flex flex-1 flex-col items-center text-center">
               <span
-                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border-4 border-white font-mono text-[12px] font-bold shadow-lift transition-all duration-500 ${
+                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border-4 border-white font-mono text-[13.5px] font-bold shadow-lift transition-all duration-500 ${
                   visible ? 'text-white' : 'text-ink/30'
                 }`}
                 style={{ background: visible ? tint : '#E6EAF3' }}
@@ -56,13 +56,13 @@ export function StepsScene({ slide, shown, moduleLabel }: SceneProps) {
               {visible ? (
                 <div className="anim-rise mt-2 w-full rounded-md border-2 bg-white p-2.5 shadow-lift" style={{ borderColor: tint }}>
                   <h3
-                    className="font-display text-[clamp(0.68rem,1.47cqw,0.9rem)] font-bold leading-tight"
+                    className="font-display text-[clamp(0.82rem,1.76cqw,1.08rem)] font-bold leading-tight"
                     style={{ color: tint }}
                   >
                     {s.label}
                   </h3>
                   {s.body ? (
-                    <p className="mt-1 text-[clamp(0.55rem,1.12cqw,0.7rem)] leading-snug text-ink/60">
+                    <p className="mt-1 text-[clamp(0.66rem,1.34cqw,0.84rem)] leading-snug text-ink/60">
                       {s.body}
                     </p>
                   ) : null}
@@ -76,7 +76,7 @@ export function StepsScene({ slide, shown, moduleLabel }: SceneProps) {
       </div>
 
       {data.footnote && shown(data.footnote.id) ? (
-        <p className="anim-rise mt-2 border-l-[3px] border-gold pl-3 text-[clamp(0.6rem,1.26cqw,0.78rem)] leading-relaxed text-ink/70">
+        <p className="anim-rise mt-2 border-l-[3px] border-gold pl-3 text-[clamp(0.72rem,1.51cqw,0.94rem)] leading-relaxed text-ink/70">
           {data.footnote.text}
         </p>
       ) : null}

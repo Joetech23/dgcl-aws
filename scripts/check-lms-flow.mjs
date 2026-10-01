@@ -14,9 +14,12 @@ import { mkdir, readdir } from 'node:fs/promises'
 import path from 'node:path'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
-const BASE = 'http://localhost:3014'
+// Runs against the preview backend only: it signs up test learners and sends
+// enquiries, which must never reach the real Supabase project. Point it at a
+// server started with the Supabase variables blank (see .claude/launch.json).
+const BASE = process.env.BASE ?? 'http://localhost:3016'
 const allLessons = (await readdir(path.join(ROOT, 'public', 'audio')))
-  .filter((f) => /^[sie]\d\d-.*\.json$/.test(f))
+  .filter((f) => /^[sieb]\d\d-.*\.json$/.test(f))
   .map((f) => f.slice(0, -5))
 
 const results = []
@@ -34,6 +37,12 @@ for (const [label, w, h] of [['desktop', 1440, 900], ['phone', 390, 844]]) {
   const page = await ctx.newPage()
   const errors = []
   page.on('pageerror', (e) => errors.push(e.message))
+  // Safety: this test writes fake data. Abort it if it ever reaches Supabase.
+  await ctx.route(/supabase\.co/, (route) => {
+    console.error('ABORT: the test server is talking to the real Supabase project. Start it with NEXT_PUBLIC_BACKEND=preview.')
+    route.abort()
+    process.exit(2)
+  })
   const shot = (name) => page.screenshot({ path: `shots/lms/${label}-${name}.png` })
 
   // Landing, arriving from a partner link.
@@ -127,7 +136,7 @@ for (const [label, w, h] of [['desktop', 1440, 900], ['phone', 390, 844]]) {
   check('end of Module 3 leads on to Module 4', await page.getByRole('link', { name: /Start Module 4/ }).isVisible())
   await page.goto(BASE + '/learn/m04-s3/', { waitUntil: 'networkidle' })
   await page.waitForTimeout(600)
-  check('Module 4 (S3) is free and marked coming soon', await page.getByText('Module 4 is coming soon').isVisible())
+  check('Module 4 (S3) is free and ready to play', await page.getByRole('button', { name: /Play lesson|Watch again|Continue/ }).first().isVisible())
 
   await page.goto(BASE + '/dashboard/', { waitUntil: 'networkidle' })
   await page.waitForTimeout(900)

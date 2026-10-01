@@ -39,7 +39,7 @@ export function OutroScene({ shown }: SceneProps) {
           style={{ filter: 'brightness(0) invert(1)' }}
         />
         <span aria-hidden className="h-4 w-px bg-white/20" />
-        <span className="font-display text-[clamp(0.62rem,1.54cqw,0.88rem)] font-semibold text-white/85">
+        <span className="font-display text-[clamp(0.74rem,1.85cqw,1.06rem)] font-semibold text-white/85">
           AWS Cloud Training · Module 1
         </span>
         <span className="ml-auto h-0.5 w-16 bg-gold" />
@@ -66,7 +66,7 @@ export function OutroScene({ shown }: SceneProps) {
               'The global network: regions, zones, edges',
               'Accounts, APIs, and the Well-Architected Framework',
             ].map((t) => (
-              <li key={t} className="flex items-start gap-2 text-[clamp(0.62rem,1.33cqw,0.82rem)] text-white/80">
+              <li key={t} className="flex items-start gap-2 text-[clamp(0.74rem,1.6cqw,0.98rem)] text-white/80">
                 <span aria-hidden className="mt-1.5 h-1.5 w-1.5 shrink-0 rotate-45 bg-gold" />
                 <span>{t}</span>
               </li>
@@ -75,7 +75,7 @@ export function OutroScene({ shown }: SceneProps) {
         ) : null}
 
         {shown('next') ? (
-          <p className="anim-rise mt-5 max-w-[48%] rounded-md border-l-[3px] border-gold bg-white/10 px-3 py-2 text-[clamp(0.62rem,1.33cqw,0.82rem)] leading-relaxed text-white/85">
+          <p className="anim-rise mt-5 max-w-[48%] rounded-md border-l-[3px] border-gold bg-white/10 px-3 py-2 text-[clamp(0.74rem,1.6cqw,0.98rem)] leading-relaxed text-white/85">
             Next: Module 2, Identity and Access Management, builds directly on this.
           </p>
         ) : null}

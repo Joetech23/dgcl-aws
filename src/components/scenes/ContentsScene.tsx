@@ -51,10 +51,10 @@ export function ContentsScene({ shown }: SceneProps) {
 
       {/* Corner tab, like the deck's yellow AWS COURSE flag */}
       <div className="absolute left-0 top-0 z-20 rounded-br-md bg-gold px-3 py-1.5">
-        <p className="font-display text-[clamp(0.5rem,1.2cqw,0.68rem)] font-bold uppercase tracking-[0.12em] text-blue-deep">
+        <p className="font-display text-[clamp(0.6rem,1.44cqw,0.82rem)] font-bold uppercase tracking-[0.12em] text-blue-deep">
           AWS Course
         </p>
-        <p className="font-display text-[clamp(0.62rem,1.6cqw,0.9rem)] font-extrabold leading-none text-blue-deep">
+        <p className="font-display text-[clamp(0.74rem,1.92cqw,1.08rem)] font-extrabold leading-none text-blue-deep">
           CO2/CO3
         </p>
       </div>
@@ -95,25 +95,25 @@ export function ContentsScene({ shown }: SceneProps) {
                     style={{ animationDelay: `${(idx % 8) * 45}ms` }}
                   >
                     <span
-                      className={`w-7 shrink-0 text-right font-mono text-[clamp(0.5rem,1.15cqw,0.68rem)] font-bold ${
+                      className={`w-7 shrink-0 text-right font-mono text-[clamp(0.6rem,1.38cqw,0.82rem)] font-bold ${
                         isCurrent ? 'text-gold' : 'text-white/40'
                       }`}
                     >
                       {i === 0 ? 'Intro' : i}
                     </span>
                     <span
-                      className={`min-w-0 text-[clamp(0.52rem,1.2cqw,0.72rem)] leading-snug ${
+                      className={`min-w-0 text-[clamp(0.62rem,1.44cqw,0.86rem)] leading-snug ${
                         isCurrent ? 'font-semibold text-white' : 'text-white/75'
                       }`}
                     >
                       {label}
                     </span>
                     {isCurrent ? (
-                      <span className="ml-auto shrink-0 rounded-full bg-gold px-1.5 py-[1px] font-mono text-[clamp(0.42rem,0.95cqw,0.56rem)] font-bold uppercase tracking-[0.1em] text-blue-deep">
+                      <span className="ml-auto shrink-0 rounded-full bg-gold px-1.5 py-[1px] font-mono text-[clamp(0.5rem,1.14cqw,0.67rem)] font-bold uppercase tracking-[0.1em] text-blue-deep">
                         You are here
                       </span>
                     ) : isNext ? (
-                      <span className="ml-auto shrink-0 rounded-full border border-white/40 px-1.5 py-[1px] font-mono text-[clamp(0.42rem,0.95cqw,0.56rem)] font-bold uppercase tracking-[0.1em] text-white/80">
+                      <span className="ml-auto shrink-0 rounded-full border border-white/40 px-1.5 py-[1px] font-mono text-[clamp(0.5rem,1.14cqw,0.67rem)] font-bold uppercase tracking-[0.1em] text-white/80">
                         Up next
                       </span>
                     ) : null}

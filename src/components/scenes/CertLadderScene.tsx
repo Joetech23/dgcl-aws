@@ -48,7 +48,7 @@ export function CertLadderScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="AWS" titleAccent="Certification Path" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[75%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/60">
+        <p className="anim-rise mt-1 max-w-[75%] text-[clamp(0.82rem,1.76cqw,1.06rem)] leading-relaxed text-ink/60">
           Four tiers that map to how much experience you have on AWS.
         </p>
       ) : null}
@@ -69,7 +69,7 @@ export function CertLadderScene({ shown, compact }: SceneProps) {
                   }}
                 >
                   <div
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full font-mono text-[11px] font-bold text-white"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full font-mono text-[13px] font-bold text-white"
                     style={{ background: lv.tint }}
                   >
                     {String(LEVELS.length - i).padStart(2, '0')}
@@ -77,20 +77,20 @@ export function CertLadderScene({ shown, compact }: SceneProps) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-2">
                       <h3
-                        className="font-display text-[clamp(0.8rem,1.89cqw,1.05rem)] font-bold"
+                        className="font-display text-[clamp(0.9rem,2.12cqw,1.18rem)] font-bold"
                         style={{ color: lv.tint }}
                       >
                         {lv.label}
                       </h3>
-                      <span className="font-mono text-[10px] text-ink/45">{lv.subtitle}</span>
+                      <span className="font-mono text-[12px] text-ink/45">{lv.subtitle}</span>
                     </div>
-                    <p className="mt-0.5 truncate text-[clamp(0.6rem,1.29cqw,0.76rem)] text-ink/60">
+                    <p className="mt-0.5 truncate text-[clamp(0.72rem,1.55cqw,0.91rem)] text-ink/60">
                       {lv.exams}
                     </p>
                   </div>
                   {lv.marker ? (
                     <span
-                      className="rounded-full bg-gold px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-blue-deep"
+                      className="rounded-full bg-gold px-2 py-0.5 font-mono text-[12px] font-bold uppercase tracking-wide text-blue-deep"
                     >
                       {lv.marker}
                     </span>

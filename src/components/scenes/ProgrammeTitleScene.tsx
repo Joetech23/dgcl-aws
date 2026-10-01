@@ -67,7 +67,7 @@ export function ProgrammeTitleScene({ shown }: SceneProps) {
               <span className="text-white"> CO2/CO3</span>
             </h1>
             {shown('academy') ? (
-              <p className="anim-rise mt-2 font-display text-[clamp(0.72rem,2.1cqw,1.05rem)] font-bold uppercase tracking-[0.1em] text-white/90">
+              <p className="anim-rise mt-2 font-display text-[clamp(0.81rem,2.35cqw,1.18rem)] font-bold uppercase tracking-[0.1em] text-white/90">
                 DGCL Digital Cloud Academy
               </p>
             ) : null}

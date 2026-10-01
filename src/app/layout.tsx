@@ -24,6 +24,16 @@ const body = localFont({
   fallback: ['system-ui', 'Segoe UI', 'sans-serif'],
 })
 
+// Inside the player (slides, captions, activities). Sora has a large
+// x-height and open shapes, so it stays readable when a slide is scaled down
+// to phone size, where Raleway's thin strokes faded.
+const slide = localFont({
+  src: [{ path: './fonts/sora-var.woff2', weight: '300 700', style: 'normal' }],
+  variable: '--font-slide',
+  display: 'swap',
+  fallback: ['system-ui', 'Segoe UI', 'sans-serif'],
+})
+
 const mono = localFont({
   src: [
     { path: './fonts/plex-mono-400.woff2', weight: '400', style: 'normal' },
@@ -42,7 +52,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${display.variable} ${body.variable} ${slide.variable} ${mono.variable}`} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   )

@@ -42,11 +42,11 @@ export function PhotoScene({ slide, shown, moduleLabel }: SceneProps) {
                 key={p.id}
                 className="anim-rise rounded-md border-l-[3px] border-gold bg-white/95 px-3 py-2 shadow-lift backdrop-blur-sm"
               >
-                <p className="font-display text-[clamp(0.66rem,1.4cqw,0.86rem)] font-bold text-blue-deep">
+                <p className="font-display text-[clamp(0.79rem,1.68cqw,1.03rem)] font-bold text-blue-deep">
                   {p.label}
                 </p>
                 {p.body ? (
-                  <p className="mt-0.5 text-[clamp(0.55rem,1.12cqw,0.7rem)] leading-snug text-ink/65">
+                  <p className="mt-0.5 text-[clamp(0.66rem,1.34cqw,0.84rem)] leading-snug text-ink/65">
                     {p.body}
                   </p>
                 ) : null}
@@ -57,7 +57,7 @@ export function PhotoScene({ slide, shown, moduleLabel }: SceneProps) {
       </div>
 
       {data.footnote && shown(data.footnote.id) ? (
-        <p className="anim-rise mt-2 border-l-[3px] border-gold pl-3 text-[clamp(0.6rem,1.26cqw,0.78rem)] leading-relaxed text-ink/70">
+        <p className="anim-rise mt-2 border-l-[3px] border-gold pl-3 text-[clamp(0.72rem,1.51cqw,0.94rem)] leading-relaxed text-ink/70">
           {data.footnote.text}
         </p>
       ) : null}

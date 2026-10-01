@@ -47,7 +47,7 @@ export function SlideFrame({
           priority
         />
         <span aria-hidden className="h-4 w-px bg-line" />
-        <span className="font-display text-[clamp(0.62rem,1.54cqw,0.88rem)] font-semibold text-blue-deep">
+        <span className="font-display text-[clamp(0.74rem,1.85cqw,1.06rem)] font-semibold text-blue-deep">
           {sectionLabel}
         </span>
         <span className="ml-auto h-0.5 w-16 bg-gradient-to-r from-transparent via-gold to-gold" />
@@ -59,7 +59,7 @@ export function SlideFrame({
         }`}
       >
         {eyebrow ? (
-          <p className="mb-1 font-display text-[clamp(0.58rem,1.33cqw,0.75rem)] font-semibold uppercase tracking-[0.16em] text-gold">
+          <p className="mb-1 font-display text-[clamp(0.7rem,1.6cqw,0.9rem)] font-semibold uppercase tracking-[0.16em] text-gold">
             {eyebrow}
           </p>
         ) : null}

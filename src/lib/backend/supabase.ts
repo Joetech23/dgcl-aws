@@ -11,7 +11,11 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const SUPABASE_ON = Boolean(URL && KEY)
+// NEXT_PUBLIC_BACKEND=preview forces the browser-only backend even when keys
+// exist, so automated tests can never write fake learners into the real project.
+const FORCE_PREVIEW = process.env.NEXT_PUBLIC_BACKEND === 'preview'
+
+export const SUPABASE_ON = !FORCE_PREVIEW && Boolean(URL && KEY)
 
 let client: SupabaseClient | null = null
 

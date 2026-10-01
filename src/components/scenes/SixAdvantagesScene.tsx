@@ -22,7 +22,7 @@ export function SixAdvantagesScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="The Six Advantages" titleAccent="of Cloud Computing" compact={compact}>
       {shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.68rem,1.47cqw,0.88rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[85%] text-[clamp(0.82rem,1.76cqw,1.06rem)] leading-relaxed text-ink/65">
           Straight out of the AWS whitepaper. Worth memorising for the exam.
         </p>
       ) : null}
@@ -36,7 +36,7 @@ export function SixAdvantagesScene({ shown, compact }: SceneProps) {
                 style={{ borderColor: a.tint }}
               >
                 <span
-                  className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full font-mono text-[11px] font-bold text-white"
+                  className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full font-mono text-[13px] font-bold text-white"
                   style={{ background: a.tint }}
                 >
                   <span
@@ -46,7 +46,7 @@ export function SixAdvantagesScene({ shown, compact }: SceneProps) {
                   />
                   {a.n}
                 </span>
-                <span className="font-display text-[clamp(0.62rem,1.33cqw,0.78rem)] font-semibold leading-tight text-blue-deep">
+                <span className="font-display text-[clamp(0.74rem,1.6cqw,0.94rem)] font-semibold leading-tight text-blue-deep">
                   {a.label}
                 </span>
               </div>

@@ -20,7 +20,7 @@ export function CardsScene({ slide, shown, moduleLabel }: SceneProps) {
   return (
     <SlideFrame title={slide.title} titleAccent={slide.subtitle} sectionLabel={moduleLabel}>
       {data.intro && shown('intro') ? (
-        <p className="anim-rise mt-1 max-w-[88%] text-[clamp(0.66rem,1.4cqw,0.85rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[88%] text-[clamp(0.79rem,1.68cqw,1.02rem)] leading-relaxed text-ink/65">
           {data.intro}
         </p>
       ) : null}
@@ -43,7 +43,7 @@ export function CardsScene({ slide, shown, moduleLabel }: SceneProps) {
               style={{ borderColor: tint }}
             >
               <span
-                className="grid h-7 w-7 shrink-0 place-items-center rounded-full font-mono text-[10.5px] font-bold text-white"
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-full font-mono text-[12.5px] font-bold text-white"
                 style={{ background: tint }}
               >
                 {String(i + 1).padStart(2, '0')}
@@ -51,17 +51,17 @@ export function CardsScene({ slide, shown, moduleLabel }: SceneProps) {
               <div className="min-w-0 flex-1">
                 {c.eyebrow ? (
                   <p
-                    className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em]"
+                    className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em]"
                     style={{ color: tint }}
                   >
                     {c.eyebrow}
                   </p>
                 ) : null}
-                <h3 className="font-display text-[clamp(0.68rem,1.4cqw,0.88rem)] font-bold leading-tight text-blue-deep">
+                <h3 className="font-display text-[clamp(0.82rem,1.68cqw,1.06rem)] font-bold leading-tight text-blue-deep">
                   {c.label}
                 </h3>
                 {c.body ? (
-                  <p className="mt-0.5 text-[clamp(0.56rem,1.15cqw,0.72rem)] leading-snug text-ink/60">
+                  <p className="mt-0.5 text-[clamp(0.67rem,1.38cqw,0.86rem)] leading-snug text-ink/60">
                     {c.body}
                   </p>
                 ) : null}
@@ -72,7 +72,7 @@ export function CardsScene({ slide, shown, moduleLabel }: SceneProps) {
       </div>
 
       {data.footnote && shown(data.footnote.id) ? (
-        <p className="anim-rise mt-2 border-l-[3px] border-gold pl-3 text-[clamp(0.6rem,1.26cqw,0.78rem)] leading-relaxed text-ink/70">
+        <p className="anim-rise mt-2 border-l-[3px] border-gold pl-3 text-[clamp(0.72rem,1.51cqw,0.94rem)] leading-relaxed text-ink/70">
           {data.footnote.text}
         </p>
       ) : null}

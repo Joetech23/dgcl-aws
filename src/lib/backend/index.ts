@@ -91,7 +91,7 @@ function friendly(message: string) {
   console.error('[auth]', message)
   if (/invalid login/i.test(message)) return 'That email and password do not match.'
   if (/already registered|already exists/i.test(message)) return 'You already have an account with this email. Log in, or use Continue with Google.'
-  if (/email not confirmed/i.test(message)) return 'Please confirm your email first: open the link we sent you.'
+  if (/email not confirmed/i.test(message)) return 'Please confirm your email first, with the code we sent you.'
   if (/sending (confirmation|magic link)|confirmation email|not authorized/i.test(message))
     return 'We could not send your confirmation email just now. Please try Continue with Google, or try again later.'
   if (/rate limit|too many/i.test(message)) return 'Too many attempts in a short time. Please wait a few minutes and try again.'
@@ -155,6 +155,86 @@ export async function signInWithGoogle(next: string): Promise<AuthResult> {
     return error ? { ok: false, error: friendly(error.message) } : { ok: true }
   }
   return signUp({ name: 'Google learner', email: 'learner@gmail.com', password: 'google-oauth' })
+}
+
+/* ---------- one-time codes ----------
+ *
+ * Every email the learner gets carries a 6-digit code instead of a link:
+ * codes survive email apps that pre-open links, work when the email is read
+ * on another device, and are easier on a phone. The Supabase email templates
+ * (supabase/email-templates) print {{ .Token }}, which is that code.
+ *
+ * In preview mode no email is sent, and any 6 digits are accepted.
+ */
+
+export const PREVIEW_CODE_HINT = 'Preview mode: no email is sent. Enter any 6 digits.'
+
+const codeOk = (token: string) => /^\d{6}$/.test(token.trim())
+
+/** Confirms a new account with the code from the welcome email. */
+export async function verifySignupCode(email: string, token: string): Promise<AuthResult> {
+  if (!codeOk(token)) return { ok: false, error: 'Enter the 6-digit code from the email.' }
+  if (!SUPABASE_ON) return { ok: true }
+  const { error } = await sb().auth.verifyOtp({ email: email.trim().toLowerCase(), token: token.trim(), type: 'signup' })
+  if (error) return { ok: false, error: codeError(error.message) }
+  await refresh()
+  return { ok: true }
+}
+
+export async function resendSignupCode(email: string): Promise<AuthResult> {
+  if (!SUPABASE_ON) return { ok: true }
+  const { error } = await sb().auth.resend({ type: 'signup', email: email.trim().toLowerCase() })
+  return error ? { ok: false, error: friendly(error.message) } : { ok: true }
+}
+
+/** Log in without a password: email a code to an existing account. */
+export async function sendLoginCode(email: string): Promise<AuthResult> {
+  const clean = email.trim().toLowerCase()
+  if (!SUPABASE_ON) return { ok: true }
+  const { error } = await sb().auth.signInWithOtp({ email: clean, options: { shouldCreateUser: false } })
+  if (error && /signups not allowed|not found/i.test(error.message)) return { ok: false, error: 'There is no account with that email. Create one instead.' }
+  return error ? { ok: false, error: friendly(error.message) } : { ok: true }
+}
+
+export async function verifyLoginCode(email: string, token: string): Promise<AuthResult> {
+  if (!codeOk(token)) return { ok: false, error: 'Enter the 6-digit code from the email.' }
+  const clean = email.trim().toLowerCase()
+  if (!SUPABASE_ON) {
+    const existing = read<User>(K.user)
+    if (!existing || existing.email !== clean) return signUp({ name: clean.split('@')[0].replace(/[._]/g, ' '), email: clean, password: 'preview-code' })
+    await refresh()
+    return { ok: true }
+  }
+  const { error } = await sb().auth.verifyOtp({ email: clean, token: token.trim(), type: 'email' })
+  if (error) return { ok: false, error: codeError(error.message) }
+  await refresh()
+  return { ok: true }
+}
+
+/** Forgotten password: email a code, then set a new password with it. */
+export async function sendResetCode(email: string): Promise<AuthResult> {
+  if (!SUPABASE_ON) return { ok: true }
+  const { error } = await sb().auth.resetPasswordForEmail(email.trim().toLowerCase())
+  return error ? { ok: false, error: friendly(error.message) } : { ok: true }
+}
+
+export async function resetPasswordWithCode(email: string, token: string, password: string): Promise<AuthResult> {
+  if (!codeOk(token)) return { ok: false, error: 'Enter the 6-digit code from the email.' }
+  if (password.length < 8) return { ok: false, error: 'Use at least 8 characters for your new password.' }
+  const clean = email.trim().toLowerCase()
+  if (!SUPABASE_ON) return verifyLoginCode(clean, token)
+  const { error } = await sb().auth.verifyOtp({ email: clean, token: token.trim(), type: 'recovery' })
+  if (error) return { ok: false, error: codeError(error.message) }
+  const { error: pwError } = await sb().auth.updateUser({ password })
+  if (pwError) return { ok: false, error: friendly(pwError.message) }
+  await refresh()
+  return { ok: true }
+}
+
+function codeError(message: string) {
+  console.error('[auth code]', message)
+  if (/expired|invalid|otp/i.test(message)) return 'That code is wrong or has expired. Check the latest email, or send a new code.'
+  return friendly(message)
 }
 
 export async function signOut() {

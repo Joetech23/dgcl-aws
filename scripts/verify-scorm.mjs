@@ -46,7 +46,7 @@ async function main() {
   const tabs = await frame.getByRole('tablist', { name: 'Modules' }).getByRole('tab').count()
   const m1 = await frame.getByRole('navigation', { name: 'Slides' }).getByRole('button').count()
   const m2Locked = await frame.getByRole('tab', { name: /^Module 1/ }).getAttribute('aria-disabled')
-  console.log(`  ${tabs === 4 ? 'PASS' : 'FAIL'}  four modules in the package — ${tabs}`)
+  console.log(`  ${tabs === 5 ? 'PASS' : 'FAIL'}  five modules in the package (Introduction + 1 to 4) — ${tabs}`)
   console.log(`  ${m1 === 2 && m2Locked === 'true' ? 'PASS' : 'FAIL'}  new learner starts in the Introduction with Module 1 locked — ${m1} slides, locked=${m2Locked}`)
 
   await page.screenshot({ path: 'shots/scorm-in-lms.png' })

@@ -13,7 +13,7 @@ export function RegionsAzsScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="Regions and" titleAccent="Availability Zones" compact={compact}>
       <div className="mt-2 grid flex-1 grid-cols-[0.85fr_1fr] gap-4">
-        <ul className="space-y-2 text-[clamp(0.62rem,1.33cqw,0.78rem)] leading-snug">
+        <ul className="space-y-2 text-[clamp(0.74rem,1.6cqw,0.94rem)] leading-snug">
           <Fact visible={shown('minimum')}>
             <strong className="text-blue-deep">Two or more</strong> availability zones in every region.
           </Fact>
@@ -56,7 +56,7 @@ function RegionMap({ show, showLinks }: { show: boolean; showLinks: boolean }) {
   if (!show) return <div className="rounded-md border border-dashed border-line/60 opacity-30" />
   return (
     <div className="rounded-md border border-line bg-white p-2 shadow-lift">
-      <p className="mb-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.14em] text-blue-electric">
+      <p className="mb-1 font-mono text-[11.5px] font-semibold uppercase tracking-[0.14em] text-blue-electric">
         Region · eu-west-2 · London
       </p>
       <svg viewBox="0 0 240 180" className="h-auto w-full" role="img" aria-label="Region with three availability zones">

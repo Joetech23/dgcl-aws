@@ -15,7 +15,7 @@ export function WhatIsCloudScene({ shown, compact }: SceneProps) {
   return (
     <SlideFrame title="What is the" titleAccent="cloud?" compact={compact}>
       {shown('question') ? (
-        <p className="anim-rise mt-1 max-w-[75%] text-[clamp(0.7rem,1.54cqw,0.9rem)] leading-relaxed text-ink/65">
+        <p className="anim-rise mt-1 max-w-[75%] text-[clamp(0.84rem,1.85cqw,1.08rem)] leading-relaxed text-ink/65">
           Have a go below before I answer. An answer you reach yourself is one you keep.
         </p>
       ) : null}
@@ -34,12 +34,12 @@ export function WhatIsCloudScene({ shown, compact }: SceneProps) {
 
       <div className="mt-3 space-y-2">
         {shown('punchline') ? (
-          <p className="anim-wipe max-w-[85%] font-display text-[clamp(0.85rem,2.24cqw,1.2rem)] font-bold leading-snug text-blue-deep">
+          <p className="anim-wipe max-w-[85%] font-display text-[clamp(0.95rem,2.51cqw,1.34rem)] font-bold leading-snug text-blue-deep">
             Someone else’s computer, in someone else’s building, rented over the internet.
           </p>
         ) : null}
         {shown('origin') ? (
-          <p className="anim-rise max-w-[80%] border-l-[3px] border-gold pl-3 text-[clamp(0.65rem,1.4cqw,0.82rem)] leading-relaxed text-ink/60">
+          <p className="anim-rise max-w-[80%] border-l-[3px] border-gold pl-3 text-[clamp(0.78rem,1.68cqw,0.98rem)] leading-relaxed text-ink/60">
             The word comes from the drawing, not the technology. On old network diagrams, the part you did not control was always sketched as a cloud.
           </p>
         ) : null}
