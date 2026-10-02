@@ -273,7 +273,16 @@ export async function saveLead(input: LeadInput): Promise<{ ok: boolean; error?:
   }
   if (SUPABASE_ON) {
     const { error } = await sb().from('leads').insert(row)
-    return error ? { ok: false, error: 'We could not send that. Please try again.' } : { ok: true }
+    if (error) return { ok: false, error: 'We could not send that. Please try again.' }
+    // The enquiry is saved. The emails (alert to DGCL, receipt to the learner)
+    // are a courtesy on top: never make the learner wait on them or see them fail.
+    void fetch('/api/enquiry/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...row, referralCode: row.referral_code }),
+      keepalive: true,
+    }).catch(() => {})
+    return { ok: true }
   }
   const leads = read<unknown[]>(K.leads) ?? []
   write(K.leads, [{ id: `l_${Date.now()}`, status: 'new', notes: null, created_at: new Date().toISOString(), ...row }, ...leads])

@@ -120,19 +120,5 @@ const emails = [
 await mkdir(OUT, { recursive: true })
 for (const e of emails) await writeFile(path.join(OUT, e.file), layout(e))
 
-const readme = `# Supabase email templates
-
-Built by \`node scripts/build-email-templates.mjs\`. Every email sends a 6-digit
-code (\`{{ .Token }}\`) instead of a link. Edit the script, not these files.
-
-Paste each into **Supabase > Authentication > Emails > Templates**:
-
-| Supabase template | Subject | File |
-| --- | --- | --- |
-${emails.map((e) => `| ${e.template} | ${e.subject} | ${e.file} |`).join('\n')}
-
-The logo loads from \`{{ .SiteURL }}/brand/dgcl-logo.png\`, so set **Site URL**
-(Authentication > URL Configuration) to the live site address.
-`
-await writeFile(path.join(OUT, 'README.md'), readme)
+// The setup guide, README.md in that folder, is written by hand and left alone.
 console.log(`wrote ${emails.length} templates to ${OUT}`)
