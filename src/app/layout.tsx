@@ -1,6 +1,8 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
+import { SITE } from '@/config/site'
+import { Pwa } from '@/components/site/Pwa'
 
 /**
  * Typefaces are committed to the repo and loaded from disk, not fetched from
@@ -44,16 +46,54 @@ const mono = localFont({
   fallback: ['ui-monospace', 'Consolas', 'monospace'],
 })
 
+// Google Search Console: paste the code from its "HTML tag" method into
+// NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION (a GitHub repository variable; it is not a secret).
+const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+
 export const metadata: Metadata = {
-  title: 'AWS Cloud Training CO2/CO3 | DGCL Digital Cloud Academy',
-  description:
-    'An interactive introduction to Amazon Web Services. Built for people coming to the cloud for the first time.',
+  metadataBase: new URL(SITE.url),
+  title: { default: SITE.title, template: `%s | ${SITE.name}` },
+  description: SITE.description,
+  applicationName: SITE.name,
+  keywords: [
+    'free AWS course',
+    'AWS Cloud training',
+    'DevOps tools training',
+    'cybersecurity and ethical hacking course',
+    'healthcare data analysis AI machine learning',
+    'DGCL Digital Cloud Academy',
+    'FreeTechPath',
+  ],
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: SITE.name,
+    title: SITE.title,
+    description: SITE.description,
+    url: '/',
+    locale: 'en_GB',
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'FreeTechPath by DGCL Digital Cloud Academy' }],
+  },
+  twitter: { card: 'summary_large_image', title: SITE.title, description: SITE.description, images: ['/og.png'] },
+  icons: { apple: '/pwa/apple-touch-icon.png' },
+  appleWebApp: { capable: true, title: SITE.name, statusBarStyle: 'default' },
+  ...(googleVerification ? { verification: { google: googleVerification } } : {}),
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#10182E' },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${slide.variable} ${mono.variable}`} suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Pwa />
+      </body>
     </html>
   )
 }

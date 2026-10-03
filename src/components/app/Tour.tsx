@@ -44,7 +44,7 @@ const STEPS: Step[] = [
   {
     target: 'nav-live',
     title: '4. Instructor-led classes',
-    body: 'Prefer a teacher? Live classes run for AWS Cloud, DevOps, Cybersecurity, and Data and AI. Ask our team from there.',
+    body: 'Prefer a teacher? Live classes run for AWS Cloud, DevOps Tools, Cybersecurity and Ethical Hacking, and Healthcare Data Analysis, AI and Machine Learning. Their recordings appear there too.',
   },
   {
     target: 'goals',

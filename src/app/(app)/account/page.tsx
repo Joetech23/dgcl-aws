@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { signOut, updateProfile, useAccount } from '@/lib/backend'
 import { findTrack } from '@/config/tracks'
+import { displayName } from '@/lib/people'
 import { Avatar } from '@/components/app/AppShell'
 import { EnquireButton } from '@/components/site/Enquiry'
 import { buttonClass } from '@/components/site/ui'
@@ -26,8 +27,8 @@ export default function AccountPage() {
         <div className="flex items-center gap-4">
           <Avatar name={user.name} className="h-14 w-14 text-[18px]" />
           <div className="min-w-0">
-            <p className="font-display text-[17px] font-extrabold capitalize text-ink">{user.name}</p>
-            <p className="truncate text-[14px] text-ink/55">{user.email}</p>
+            <p className="truncate font-display text-[17px] font-extrabold capitalize text-ink">{displayName(user.name, user.email)}</p>
+            <p className="break-all text-[14px] leading-snug text-ink/55">{user.email}</p>
           </div>
         </div>
         <form

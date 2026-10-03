@@ -352,11 +352,66 @@ input[type='range'].scrub::-moz-range-thumb {
   mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 40%, transparent 100%);
 }
 
+/* ---- header mark: DGCL logo <-> FreeTechPath wordmark ----
+   One 10 second loop. Each face holds for about four seconds; a band of
+   light crosses it, it dissolves, and the other takes its place. Both faces
+   share one grid cell, so the header never changes size. */
+.brand-swap { position: relative; display: inline-grid; align-items: center; vertical-align: middle; }
+.brand-face { grid-area: 1 / 1; display: flex; align-items: center; justify-self: start; }
+.brand-dgcl { position: relative; animation: brand-dgcl 10s ease-in-out infinite; }
+.brand-ftp { opacity: 0; animation: brand-ftp 10s ease-in-out infinite; }
+
+/* The light on the logo: a gradient band, cut to the logo's own shape. */
+.brand-glint {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: linear-gradient(105deg, transparent 42%, #ffc000 47%, #fff3c4 50%, #ffc000 53%, transparent 58%);
+  background-size: 300% 100%;
+  -webkit-mask: url('/brand/dgcl-logo.png') left center / contain no-repeat;
+  mask: url('/brand/dgcl-logo.png') left center / contain no-repeat;
+  animation: brand-glint 10s linear infinite;
+}
+/* The light on the wordmark: the same band, running through the letters. */
+.brand-word {
+  --c: rgb(var(--ink));
+  background: linear-gradient(105deg, var(--c) 42%, #ffc000 47%, #ffe08a 50%, #ffc000 53%, var(--c) 58%);
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: brand-word 10s linear infinite;
+}
+@keyframes brand-dgcl {
+  0%, 40% { opacity: 1; transform: none; filter: blur(0); }
+  46%, 94% { opacity: 0; transform: translateY(-3px) scale(1.03); filter: blur(5px); }
+  100% { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes brand-ftp {
+  0%, 42% { opacity: 0; transform: translateY(4px); filter: blur(5px); }
+  49%, 91% { opacity: 1; transform: none; filter: blur(0); }
+  97%, 100% { opacity: 0; transform: translateY(-3px); filter: blur(5px); }
+}
+@keyframes brand-glint {
+  0%, 26% { opacity: 0; background-position: 100% 0; }
+  27% { opacity: 1; background-position: 100% 0; }
+  40% { opacity: 1; background-position: 0% 0; }
+  41%, 100% { opacity: 0; background-position: 0% 0; }
+}
+@keyframes brand-word {
+  0%, 62% { background-position: 100% 0; }
+  78%, 100% { background-position: 0% 0; }
+}
+
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .anim-rise, .anim-pop, .anim-fade, .anim-sheet, .preview-progress { animation: none !important; }
+  .brand-dgcl, .brand-ftp, .brand-glint, .brand-word { animation: none !important; }
+  .brand-dgcl { opacity: 0; }
+  .brand-ftp { opacity: 1; }
 }
 
 /* ---- certificate printing ----

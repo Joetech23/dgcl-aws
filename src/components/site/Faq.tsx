@@ -6,7 +6,7 @@ const QA: [string, string][] = [
   ['Can I learn on my phone?', 'Yes, and most people do. The lessons are built phone first, with captions under the slide, so you can follow with the sound off.'],
   ['What is the difference between self-paced and instructor-led?', 'Self-paced opens every animated lesson for Modules 5 to 14, with a certificate and practice exams, to take at your own speed. Instructor-led adds live classes with a DGCL instructor and a cohort, hands-on labs and career support.'],
   ['How much does it cost?', 'It depends on the programme and your country. Leave your details on any "Ask about" button and a DGCL adviser will call you with a price, usually within one working day.'],
-  ['Are DevOps, Cybersecurity and Data and AI online too?', 'They run today as live, instructor-led cohorts every four months. Online self-paced versions are on the way.'],
+  ['Are DevOps Tools, Cybersecurity and Healthcare Data Analysis here too?', 'Yes. They are taught in live instructor classes, and the recordings are published on the Instructor-led page, with a new class added each week.'],
   ['Is DGCL a registered training provider?', 'Yes. DGCL Digital Cloud Academy is on the UK Register of Learning Providers, UKPRN 10101893. You can check it yourself at ukrlp.education.gov.uk.'],
   ['I have a partner or coupon code. Where does it go?', 'If you followed a partner link, it is already saved. Otherwise, type the code into the form when you ask about a programme.'],
 ]

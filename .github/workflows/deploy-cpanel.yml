@@ -33,6 +33,8 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || vars.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      # Optional: the Google Search Console "HTML tag" code. Leave unset and no tag is added.
+      NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: ${{ vars.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || secrets.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }}
       FTP_SERVER: ${{ secrets.FTP_SERVER || vars.FTP_SERVER }}
       FTP_USERNAME: ${{ secrets.FTP_USERNAME || vars.FTP_USERNAME }}
       FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}

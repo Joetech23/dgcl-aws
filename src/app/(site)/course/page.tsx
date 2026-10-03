@@ -4,7 +4,7 @@ import { ButtonLink, Container, Eyebrow } from '@/components/site/ui'
 import { catalog, FREE_COUNT, TOTAL_MODULES } from '@/config/catalog'
 import { IconArrowRight } from '@/components/site/icons'
 
-export const metadata: Metadata = { title: 'The full AWS course | DGCL Digital Cloud Academy' }
+export const metadata: Metadata = { title: 'The full AWS Cloud course, free to start', alternates: { canonical: '/course/' } }
 
 const hours = Math.round(catalog.reduce((n, m) => n + m.minutes, 0) / 60)
 

@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { catalog, FREE_COUNT, TOTAL_MODULES } from '@/config/catalog'
 import { modules } from '@/content/modules'
 import { courses } from '@/config/courses'
+import { SITE } from '@/config/site'
 import { moduleName } from '@/lib/course/names'
 import { LessonPreview } from '@/components/site/LessonPreview'
 import { Curriculum } from '@/components/site/Curriculum'
@@ -16,9 +17,45 @@ import { IconArrowRight, IconAward, IconCheck, IconClock, IconHand, IconPhone, I
 const freeModules = catalog.filter((m) => m.free)
 const lessonCount = modules.reduce((n, m) => n + m.slides.length, 0)
 
+// What search engines read: who runs the site and what it teaches.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE.url}/#website`,
+      url: `${SITE.url}/`,
+      name: SITE.name,
+      description: SITE.description,
+      publisher: { '@id': `${SITE.url}/#org` },
+      inLanguage: 'en-GB',
+    },
+    {
+      '@type': 'EducationalOrganization',
+      '@id': `${SITE.url}/#org`,
+      name: SITE.owner,
+      alternateName: SITE.name,
+      url: `${SITE.url}/`,
+      logo: `${SITE.url}/brand/dgcl-logo.png`,
+      email: 'info@dgclgroup.com',
+      sameAs: ['https://dgclgroup.com'],
+      address: { '@type': 'PostalAddress', addressLocality: 'London', addressCountry: 'GB' },
+    },
+    ...courses.map((c) => ({
+      '@type': 'Course',
+      name: c.title,
+      description: c.summary,
+      url: `${SITE.url}/${c.online ? 'course/' : '#courses'}`,
+      provider: { '@id': `${SITE.url}/#org` },
+      ...(c.online ? { isAccessibleForFree: true } : {}),
+    })),
+  ],
+}
+
 export default function Home() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* ---------- hero ---------- */}
       <section className="relative overflow-hidden">
         <div aria-hidden className="site-grid pointer-events-none absolute inset-0" />
@@ -39,8 +76,9 @@ export default function Home() {
               </span>
             </h1>
             <p className="mt-6 max-w-[34rem] text-[17px] leading-relaxed text-ink/65">
-              Cloud, DevOps, cybersecurity, and data and AI, taught by DGCL Digital Cloud Academy. Begin today with AWS Cloud
-              Training: short narrated lessons that stop and ask you to try things, ready for your phone.
+              AWS Cloud, DevOps Tools, Cybersecurity and Ethical Hacking, and Healthcare Data Analysis, AI and Machine
+              Learning, taught by DGCL Digital Cloud Academy. Begin today with AWS Cloud Training: short narrated lessons
+              that stop and ask you to try things, ready for your phone.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="/signup/" size="lg">
@@ -58,7 +96,7 @@ export default function Home() {
                 <li key={c.id}>
                   <a
                     href={c.online ? '/signup/' : '#courses'}
-                    className={`flex h-full items-center gap-2.5 rounded-xl border bg-surface px-3 py-2.5 transition hover:-translate-y-0.5 hover:shadow-lift ${
+                    className={`flex h-full min-h-[56px] items-center gap-2.5 rounded-xl border bg-surface px-3 py-2.5 transition hover:-translate-y-0.5 hover:shadow-lift ${
                       c.online ? 'border-blue/30' : 'border-line'
                     }`}
                   >
@@ -66,9 +104,9 @@ export default function Home() {
                       <CourseIcon kind={c.icon} size={17} />
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate font-display text-[13px] font-bold leading-tight text-ink">{c.short}</span>
-                      <span className={`block text-[11.5px] leading-tight ${c.online ? 'font-semibold text-[#077A55] dark:text-mint' : 'text-ink/50'}`}>
-                        {c.online ? 'Online now, free start' : 'Instructor-led'}
+                      <span className="block font-display text-[13px] font-bold leading-tight text-ink">{c.short}</span>
+                      <span className={`mt-0.5 block text-[11.5px] leading-tight ${c.online ? 'font-semibold text-[#077A55] dark:text-mint' : 'text-ink/50'}`}>
+                        {c.online ? 'Online now, free start' : 'Live instructor classes'}
                       </span>
                     </span>
                   </a>
@@ -110,10 +148,10 @@ export default function Home() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <Eyebrow>Our courses</Eyebrow>
-              <SectionTitle className="mt-2">Four career paths, one academy</SectionTitle>
+              <SectionTitle className="mt-2">Four tech domains, one academy</SectionTitle>
             </div>
             <p className="max-w-md text-[15px] leading-relaxed text-ink/60">
-              AWS Cloud Training is online now with a free start. Every course also runs as live, instructor-led classes, with new cohorts every four months.
+              AWS Cloud Training is online now with a free start. Every domain is also taught in live instructor classes, and their recordings are being added here.
             </p>
           </div>
           <div className="mt-10">

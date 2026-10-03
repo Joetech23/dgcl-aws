@@ -6,6 +6,7 @@ import { catalog, LAST_FREE, TOTAL_MODULES } from '@/config/catalog'
 import { courses } from '@/config/courses'
 import { findTrack } from '@/config/tracks'
 import { moduleName } from '@/lib/course/names'
+import { displayName } from '@/lib/people'
 import { freeTrackDone, moduleFraction, moduleState, nextModule } from '@/lib/access'
 import { ModuleCard } from '@/components/app/ModuleCard'
 import { SlideThumb } from '@/components/app/SlideThumb'
@@ -35,14 +36,14 @@ export default function Dashboard() {
   const doneSlides = built.reduce((n, m) => n + m.lesson!.slides.filter((s) => completed.has(s.id)).length, 0)
   const modulesDone = catalog.filter((m) => m.number > 0 && moduleFraction(m, completed) === 1).length
   const overall = totalSlides ? doneSlides / totalSlides : 0
-  const firstName = a.user.name.split(' ')[0]
+  const firstName = displayName(a.user.name, a.user.email).split(' ')[0]
   const cert = a.certificates[0]
 
   return (
     <div className="mx-auto max-w-[1180px]">
-      <div>
+      <div className="min-w-0">
         <p className="text-[14px] text-ink/55">{greeting()},</p>
-        <h1 className="font-display text-[clamp(1.6rem,3.2vw,2.1rem)] font-extrabold capitalize tracking-[-0.025em] text-ink">{firstName}</h1>
+        <h1 className="truncate font-display text-[clamp(1.6rem,3.2vw,2.1rem)] font-extrabold capitalize tracking-[-0.025em] text-ink">{firstName}</h1>
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_340px]">
@@ -152,14 +153,14 @@ export default function Dashboard() {
 
           <section className="rounded-3xl bg-surface p-5 shadow-[0_1px_0_rgb(var(--line))]">
             <h2 className="font-display text-[17px] font-extrabold text-ink">Instructor-led classes</h2>
-            <p className="mt-1.5 text-[14px] leading-relaxed text-ink/60">Live classes with a DGCL instructor. New cohorts every four months.</p>
+            <p className="mt-1.5 text-[14px] leading-relaxed text-ink/60">Live classes with a DGCL instructor, with recordings added each week.</p>
             <ul className="mt-4 space-y-2">
               {courses.map((c) => (
                 <li key={c.id} className="flex items-center gap-3">
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white" style={{ background: c.tint }}>
                     <CourseIcon kind={c.icon} size={17} />
                   </span>
-                  <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-bold text-ink">{c.short}</span>
+                  <span className="min-w-0 flex-1 font-display text-[13.5px] font-bold leading-snug text-ink">{c.short}</span>
                 </li>
               ))}
             </ul>

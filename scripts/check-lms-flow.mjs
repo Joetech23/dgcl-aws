@@ -146,7 +146,8 @@ for (const [label, w, h] of [['desktop', 1440, 900], ['phone', 390, 844]]) {
   // Instructor-led lists all four courses.
   await page.goto(BASE + '/classes/', { waitUntil: 'networkidle' })
   await page.waitForTimeout(600)
-  check('instructor-led page lists four courses', (await page.getByRole('button', { name: 'Ask about the next cohort' }).count()) === 4)
+  check('instructor-led page lists four courses', (await page.getByRole('button', { name: /live (AWS )?classes$/ }).count()) === 4)
+  check('three domains list their live classes', (await page.getByText('Live class 1', { exact: true }).count()) === 3)
   await shot('08-instructor-led')
 
   if (label === 'phone') {

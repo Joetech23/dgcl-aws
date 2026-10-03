@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { AuthShell } from '@/components/site/AuthShell'
 import { AuthForm } from '@/components/site/AuthForm'
 
-export const metadata: Metadata = { title: 'Log in | DGCL Digital Cloud Academy' }
+export const metadata: Metadata = { title: 'Log in' }
 
 export default function Page() {
   return (

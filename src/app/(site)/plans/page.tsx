@@ -5,7 +5,7 @@ import { TrustBadge } from '@/components/site/TrustBadge'
 import { Container, Eyebrow } from '@/components/site/ui'
 import { IconCheck, IconLock } from '@/components/site/icons'
 
-export const metadata: Metadata = { title: 'Ways to learn | DGCL Digital Cloud Academy' }
+export const metadata: Metadata = { title: 'Ways to learn: self-paced or instructor-led', alternates: { canonical: '/plans/' } }
 
 const ROWS: [string, boolean, boolean, boolean][] = [
   ['Introduction and Modules 1 to 4', true, true, true],

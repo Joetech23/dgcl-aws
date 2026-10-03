@@ -10,7 +10,7 @@ export function generateStaticParams() {
 
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const m = findModule(params.slug)
-  return { title: m ? `${moduleName(m.number)}: ${m.title} | DGCL` : 'DGCL' }
+  return { title: m ? `${moduleName(m.number)}: ${m.title}` : 'Lesson' }
 }
 
 export default function LearnPage({ params }: { params: { slug: string } }) {

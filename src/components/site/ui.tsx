@@ -74,6 +74,35 @@ export function Logo({ className = 'h-9 w-auto', invert = false }: { className?:
   )
 }
 
+/**
+ * The header mark. It shows the DGCL logo, a light passes across it, and it
+ * becomes the FreeTechPath wordmark; then back again. Both sit in one box so
+ * nothing around it moves. Pure CSS (see `.brand-*` in globals.css); with
+ * reduced motion it rests on the FreeTechPath wordmark.
+ */
+export function Brand({ className = 'h-9' }: { className?: string }) {
+  return (
+    <span className="brand-swap">
+      <span className={`brand-face brand-dgcl ${className}`}>
+        <Logo className="h-full w-auto" />
+        <span aria-hidden className="brand-glint" />
+      </span>
+      <span aria-hidden className={`brand-face brand-ftp ${className}`}>
+        <svg viewBox="0 0 100 100" className="h-[80%] w-auto shrink-0">
+          <rect width="100" height="100" rx="22" fill="#0000BC" />
+          <path d="M22 72 L42 54 L58 62 L78 32" fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="22" cy="72" r="7" fill="#7DB8FF" />
+          <circle cx="78" cy="32" r="10" fill="#FFC000" />
+        </svg>
+        <span className="ml-2 flex flex-col justify-center whitespace-nowrap leading-none">
+          <span className="brand-word font-display text-[17px] font-extrabold tracking-[-0.02em]">FreeTechPath</span>
+          <span className="mt-[3px] text-[9.5px] font-semibold text-ink/55">by DGCL Digital Cloud Academy</span>
+        </span>
+      </span>
+    </span>
+  )
+}
+
 export function Pill({ children, tone = 'blue', className = '' }: { children: ReactNode; tone?: 'blue' | 'gold' | 'mint' | 'grey'; className?: string }) {
   const tones = {
     blue: 'bg-blue/[0.07] text-blue',

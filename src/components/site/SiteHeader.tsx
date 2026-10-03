@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useAccount } from '@/lib/backend'
-import { ButtonLink, Container, Logo } from './ui'
+import { Brand, ButtonLink, Container, Logo } from './ui'
 import { IconClose, IconMenu } from './icons'
 import { ThemeToggle } from './Theme'
 
@@ -41,8 +41,8 @@ export function SiteHeader() {
       }`}
     >
       <Container className="flex h-16 items-center gap-6 lg:h-[72px]">
-        <Link href="/" aria-label="DGCL Digital Cloud Academy, home" className="shrink-0">
-          <Logo className="h-9 w-auto lg:h-10" />
+        <Link href="/" aria-label="FreeTechPath by DGCL Digital Cloud Academy, home" className="shrink-0">
+          <Brand className="h-9 lg:h-10" />
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">

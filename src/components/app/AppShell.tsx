@@ -5,7 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState, type ReactNode } from 'react'
 import { signOut, useAccount, type Account } from '@/lib/backend'
 import { findTrack } from '@/config/tracks'
-import { Logo } from '@/components/site/ui'
+import { Brand } from '@/components/site/ui'
+import { displayName } from '@/lib/people'
 import { ThemeToggle } from '@/components/site/Theme'
 import { EnquireButton } from '@/components/site/Enquiry'
 import { Tour, startTour } from './Tour'
@@ -78,8 +79,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-[100dvh] bg-slate lg:flex">
       {/* ---------- desktop sidebar ---------- */}
       <aside className="sticky top-0 hidden h-[100dvh] w-[248px] shrink-0 flex-col border-r border-line bg-surface px-4 pb-5 pt-6 lg:flex">
-        <Link href="/" aria-label="DGCL home" className="px-2">
-          <Logo className="h-10 w-auto" />
+        <Link href="/" aria-label="FreeTechPath home" className="px-2">
+          <Brand className="h-10" />
         </Link>
         <p className="mt-8 px-3 font-display text-[11px] font-bold uppercase tracking-[0.14em] text-ink/35">Learn</p>
         <nav aria-label="App" className="mt-2 flex flex-col gap-1">
@@ -137,8 +138,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* ---------- top bar ---------- */}
         <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur lg:border-0 lg:bg-slate/90">
           <div className="flex h-16 items-center gap-2 px-4 sm:px-6 lg:h-[76px] lg:px-8">
-            <Link href="/dashboard/" className="lg:hidden" aria-label="Dashboard">
-              <Logo className="h-9 w-auto" />
+            <Link href="/dashboard/" className="min-w-0 lg:hidden" aria-label="Dashboard">
+              <Brand className="h-9" />
             </Link>
             <div className="ml-auto flex items-center gap-2">
               <div className="hidden sm:block">
@@ -156,8 +157,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   className="flex items-center gap-2.5 rounded-full p-0.5 lg:bg-surface lg:py-1 lg:pl-1 lg:pr-4 lg:shadow-[0_1px_0_rgb(var(--line))]"
                 >
                   <Avatar name={account.user.name} />
-                  <span className="hidden text-left lg:block">
-                    <span className="block font-display text-[13.5px] font-bold capitalize leading-tight text-ink">{account.user.name}</span>
+                  <span className="hidden min-w-0 text-left lg:block">
+                    <span className="block max-w-[11rem] truncate font-display text-[13.5px] font-bold capitalize leading-tight text-ink">{displayName(account.user.name, account.user.email)}</span>
                     <span className="block text-[12px] leading-tight text-ink/50">{track ? `${track.name} programme` : 'Free modules'}</span>
                   </span>
                 </button>
@@ -165,7 +166,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <>
                     <button type="button" aria-label="Close menu" className="fixed inset-0 z-10 cursor-default" onClick={() => setMenu(false)} />
                     <div className="anim-rise absolute right-0 top-[calc(100%+8px)] z-20 w-60 rounded-2xl border border-line bg-surface p-2 shadow-lift">
-                      <p className="truncate px-3 py-2 text-[13px] text-ink/55">{account.user.email}</p>
+                      <p className="truncate px-3 pt-2 font-display text-[14px] font-bold capitalize text-ink">{displayName(account.user.name, account.user.email)}</p>
+                      <p className="truncate px-3 pb-2 text-[12.5px] text-ink/55" title={account.user.email}>{account.user.email}</p>
                       <Link href="/account/" onClick={() => setMenu(false)} className="flex h-11 items-center gap-2.5 rounded-xl px-3 text-[14px] font-semibold text-ink hover:bg-slate">
                         <IconUser size={18} /> Account
                       </Link>

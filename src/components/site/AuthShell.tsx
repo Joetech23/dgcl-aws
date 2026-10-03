@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { catalog } from '@/config/catalog'
-import { Logo } from './ui'
+import { Brand } from './ui'
 import { IconCheck } from './icons'
 
 /**
@@ -14,8 +14,8 @@ export function AuthShell({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-[100dvh] bg-surface lg:grid-cols-[1fr_0.9fr]">
       <div className="flex flex-col px-5 pb-10 pt-5 sm:px-10">
-        <Link href="/" aria-label="DGCL Digital Cloud Academy, home" className="self-start">
-          <Logo className="h-10 w-auto" />
+        <Link href="/" aria-label="FreeTechPath by DGCL Digital Cloud Academy, home" className="self-start">
+          <Brand className="h-10" />
         </Link>
         <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center py-10">{children}</div>
       </div>

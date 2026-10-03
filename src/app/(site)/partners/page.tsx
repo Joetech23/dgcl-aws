@@ -3,7 +3,7 @@ import { Container, Eyebrow, SectionTitle, buttonClass } from '@/components/site
 import { EnquireButton } from '@/components/site/Enquiry'
 import { IconArrowRight, IconAward, IconCheck, IconUser } from '@/components/site/icons'
 
-export const metadata: Metadata = { title: 'Partner programme | DGCL Digital Cloud Academy' }
+export const metadata: Metadata = { title: 'Partner programme', alternates: { canonical: '/partners/' } }
 
 const STEPS = [
   { title: 'Get your code', body: 'DGCL gives you a short code, like TECHHUB10, and a link that carries it.' },

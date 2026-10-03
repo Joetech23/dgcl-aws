@@ -44,7 +44,7 @@ export const tracks: Track[] = [
       'Hands-on labs and real projects',
       'Recordings of every class',
       'Mentor Q&A and a career session',
-      'Available for AWS Cloud, DevOps, Cybersecurity, and Data and AI',
+      'For AWS Cloud, DevOps Tools, Cybersecurity and Ethical Hacking, and Healthcare Data Analysis, AI and Machine Learning',
     ],
     short: ['Live instructor classes', 'Self-paced lessons included', 'Labs and career support'],
     cta: 'Ask about live classes',

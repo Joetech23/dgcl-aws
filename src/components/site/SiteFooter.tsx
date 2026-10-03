@@ -10,7 +10,7 @@ export function SiteFooter() {
         <div>
           <Logo className="h-10 w-auto" />
           <p className="mt-4 max-w-xs text-[14px] leading-relaxed text-ink/60">
-            DGCL Digital Cloud Academy, part of Digital Group Consultancy Services Ltd, London.
+            FreeTechPath is the free learning site of DGCL Digital Cloud Academy, part of Digital Group Consultancy Services Ltd, London.
           </p>
           <div className="mt-5 flex items-center gap-3">
             <Image src="/art/aws-partner.png" alt="AWS Partner" width={146} height={146} className="h-12 w-12 rounded-md border border-line bg-white" />

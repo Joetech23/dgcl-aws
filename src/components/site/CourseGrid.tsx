@@ -1,12 +1,11 @@
 import Link from 'next/link'
 import { courses, type Course } from '@/config/courses'
-import { IconArrowRight, IconCalendar } from './icons'
-import { EnquireButton } from './Enquiry'
+import { IconArrowRight, IconVideo } from './icons'
 
 /**
- * All DGCL programmes. The AWS course leads to the free start; the others,
- * which DGCL runs as live cohorts today, take an enquiry until their online
- * versions exist.
+ * DGCL's four domains. The AWS course leads to the free start; the others
+ * are taught in live instructor classes, so their cards show the classes
+ * and lead to the Instructor-led page where the recordings are published.
  */
 export function CourseGrid() {
   return (
@@ -34,16 +33,19 @@ export function CourseGrid() {
               ))}
             </ul>
             <p className="mt-4 flex items-center gap-1.5 text-[12.5px] text-ink/50">
-              <IconCalendar size={14} className="shrink-0" />
-              {c.cohort}
+              <IconVideo size={14} className="shrink-0" />
+              {c.schedule}
             </p>
+            {c.liveClasses.length ? <ClassDots course={c} /> : null}
             <div className="mt-auto pt-5">
               {c.online ? (
                 <Link href="/signup/" className="inline-flex items-center gap-1.5 font-display text-[14px] font-bold text-blue">
                   Start Module 1 free <IconArrowRight size={16} />
                 </Link>
               ) : (
-                <EnquireLink course={c} />
+                <Link href="/classes/" className="inline-flex items-center gap-1.5 font-display text-[14px] font-bold text-ink/75 hover:text-blue">
+                  See the live classes <IconArrowRight size={16} />
+                </Link>
               )}
             </div>
           </div>
@@ -53,11 +55,22 @@ export function CourseGrid() {
   )
 }
 
-function EnquireLink({ course }: { course: Course }) {
+/** Class 1, 2, 3... as small numbered marks; filled once its recording is up. */
+function ClassDots({ course }: { course: Course }) {
   return (
-    <EnquireButton track="instructor-led" course={course.title} className="inline-flex items-center gap-1.5 font-display text-[14px] font-bold text-ink/75 hover:text-blue">
-      Ask about the next cohort <IconArrowRight size={16} />
-    </EnquireButton>
+    <ol aria-label={`${course.title}: live classes`} className="mt-2.5 flex flex-wrap items-center gap-1.5">
+      {course.liveClasses.map((k, i) => (
+        <li
+          key={k.title}
+          title={k.video ? `${k.title}: recording available` : `${k.title}: recording on the way`}
+          className="grid h-7 w-7 place-items-center rounded-full font-display text-[12px] font-extrabold"
+          style={k.video ? { background: course.tint, color: '#fff' } : { boxShadow: `inset 0 0 0 1.5px ${course.tint}66`, color: course.tint }}
+        >
+          {i + 1}
+        </li>
+      ))}
+      <li className="pl-1 text-[12px] text-ink/45">and more each week</li>
+    </ol>
   )
 }
 
