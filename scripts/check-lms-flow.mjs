@@ -63,7 +63,8 @@ for (const [label, w, h] of [['desktop', 1440, 900], ['phone', 390, 844]]) {
   await page.locator('#plans').scrollIntoViewIfNeeded()
   await page.getByRole('button', { name: 'Ask about live classes' }).click()
   const dialog = page.getByRole('dialog')
-  check('enquiry form opens with the partner code filled in', (await dialog.getByPlaceholder('e.g. TECHHUB10').inputValue()) === 'TECHHUB10')
+  await dialog.locator('#enquiry-partner').waitFor()
+  check('enquiry form preselects the partner from the link', (await dialog.locator('#enquiry-partner').inputValue()) === 'TECHHUB10')
   await shot('01-enquiry-form')
   await dialog.getByLabel('Full name').fill('Tobi Adewale')
   await dialog.getByLabel('Email').fill(`tobi.${label}@example.com`)
@@ -80,7 +81,8 @@ for (const [label, w, h] of [['desktop', 1440, 900], ['phone', 390, 844]]) {
 
   // Sign up: the partner code rides along.
   await page.goto(BASE + '/signup/', { waitUntil: 'networkidle' })
-  check('sign-up keeps the partner code', (await page.getByLabel('Partner code (optional)').inputValue()) === 'TECHHUB10')
+  await page.locator('#signup-partner').waitFor()
+  check('sign-up preselects the partner from the link', (await page.locator('#signup-partner').inputValue()) === 'TECHHUB10')
   await page.getByLabel('Your name').fill('Ada Okafor')
   await page.getByLabel('Email').fill(`ada.${label}@example.com`)
   await page.getByLabel('Password').fill('cloudskills1')

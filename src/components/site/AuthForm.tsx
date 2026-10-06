@@ -17,7 +17,8 @@ import {
   verifySignupCode,
   type AuthResult,
 } from '@/lib/backend'
-import { getReferral, normaliseCode } from '@/lib/backend/referral'
+import { getReferral } from '@/lib/backend/referral'
+import { PartnerSelect } from './PartnerSelect'
 import { Field } from './AuthShell'
 import { CodeInput } from './CodeInput'
 import { buttonClass } from './ui'
@@ -52,15 +53,11 @@ export function AuthForm({ mode }: { mode: 'signup' | 'login' }) {
   const [notice, setNotice] = useState<string | null>(null)
   const [code, setCode] = useState('')
   const [refCode, setRefCode] = useState('')
-  const [showCode, setShowCode] = useState(false)
   const [cooldown, setCooldown] = useState(0)
 
   useEffect(() => {
     const saved = getReferral()
-    if (saved) {
-      setRefCode(saved)
-      setShowCode(true)
-    }
+    if (saved) setRefCode(saved)
   }, [])
 
   useEffect(() => {
@@ -238,7 +235,7 @@ export function AuthForm({ mode }: { mode: 'signup' | 'login' }) {
       </div>
 
       <form onSubmit={submitForm} className="space-y-4">
-        {signup ? <Field label="Your name" name="name" autoComplete="name" required placeholder="Ada Okafor" /> : null}
+        {signup ? <Field label="Your name" name="name" autoComplete="name" required placeholder="John Smith" /> : null}
         <Field label="Email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" inputMode="email" />
         <div>
           <Field
@@ -256,15 +253,7 @@ export function AuthForm({ mode }: { mode: 'signup' | 'login' }) {
             </button>
           ) : null}
         </div>
-        {signup ? (
-          showCode ? (
-            <Field label="Partner code (optional)" name="code" value={refCode} onChange={(e) => setRefCode(normaliseCode(e.target.value))} placeholder="e.g. TECHHUB10" autoComplete="off" />
-          ) : (
-            <button type="button" onClick={() => setShowCode(true)} className="text-[13.5px] font-semibold text-blue hover:underline">
-              Have a partner code?
-            </button>
-          )
-        ) : null}
+        {signup ? <PartnerSelect id="signup-partner" value={refCode} onChange={setRefCode} /> : null}
         {errorBox}
         <button type="submit" disabled={busy} className={buttonClass('primary', 'lg', 'w-full')}>
           {busy ? 'One moment…' : signup ? 'Create free account' : 'Log in'}

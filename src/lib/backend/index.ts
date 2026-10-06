@@ -231,6 +231,19 @@ export async function resetPasswordWithCode(email: string, token: string, passwo
   return { ok: true }
 }
 
+/** A signed-in learner or admin sets a new password (also adds one to a Google account). */
+export async function changePassword(password: string): Promise<AuthResult> {
+  if (password.length < 8) return { ok: false, error: 'Use at least 8 characters for your new password.' }
+  if (!SUPABASE_ON) return { ok: true }
+  const { error } = await sb().auth.updateUser({ password })
+  if (error) {
+    if (/different from the old/i.test(error.message)) return { ok: false, error: 'That is your current password. Choose a new one.' }
+    if (/reauthenticat/i.test(error.message)) return { ok: false, error: 'For security, log out and use "Forgot password?" on the login page to set a new one.' }
+    return { ok: false, error: friendly(error.message) }
+  }
+  return { ok: true }
+}
+
 function codeError(message: string) {
   console.error('[auth code]', message)
   if (/expired|invalid|otp/i.test(message)) return 'That code is wrong or has expired. Check the latest email, or send a new code.'
@@ -287,6 +300,25 @@ export async function saveLead(input: LeadInput): Promise<{ ok: boolean; error?:
   const leads = read<unknown[]>(K.leads) ?? []
   write(K.leads, [{ id: `l_${Date.now()}`, status: 'new', notes: null, created_at: new Date().toISOString(), ...row }, ...leads])
   return { ok: true }
+}
+
+export type PartnerOption = { code: string; name: string }
+
+/** Active partners, for the "Referred by a partner?" list. Empty if it cannot load. */
+export async function listPartners(): Promise<PartnerOption[]> {
+  if (SUPABASE_ON) {
+    const { data, error } = await sb().rpc('list_partners')
+    if (error) {
+      // Most likely supabase/migrations/0003_partner_list.sql has not been run yet.
+      console.warn('[partners]', error.message)
+      return []
+    }
+    return (data as PartnerOption[] | null) ?? []
+  }
+  const stored = (read<{ code: string; name: string; active: boolean }[]>('dgcl-partners') ?? []).filter((p) => p.active)
+  // Preview mode shows the same sample partner the admin panel shows.
+  const all = stored.some((p) => p.code === 'TECHHUB10') ? stored : [...stored, { code: 'TECHHUB10', name: 'TechHub Lagos (sample)', active: true }]
+  return all.map(({ code, name }) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export async function partnerForCode(code: string): Promise<string | null> {

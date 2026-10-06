@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useAccount } from '@/lib/backend'
+import { sendResetCode, useAccount } from '@/lib/backend'
 import {
   createPartner,
   issueCertificate,
@@ -249,6 +249,13 @@ function Learners({ data, reload }: { data: AdminData; reload: () => void }) {
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState<'all' | 'free' | TrackId>('all')
   const [sort, setSort] = useState<'joined' | 'progress' | 'active'>('joined')
+  const [resetNote, setResetNote] = useState<{ id: string; text: string } | null>(null)
+  const sendReset = async (id: string, email: string, name: string) => {
+    if (!confirm(`Email ${name} a code to set a new password?`)) return
+    setResetNote({ id, text: 'Sending…' })
+    const res = await sendResetCode(email)
+    setResetNote({ id, text: res.ok === true ? 'Reset code sent' : res.ok === false ? res.error : 'Sent' })
+  }
   const [busy, setBusy] = useState<string | null>(null)
 
   const rows = useMemo(() => {
@@ -332,6 +339,15 @@ function Learners({ data, reload }: { data: AdminData; reload: () => void }) {
                     {s.role === 'admin' ? <span className="ml-1.5 rounded bg-blue/10 px-1.5 py-0.5 text-[10px] font-bold uppercase text-blue">admin</span> : null}
                   </p>
                   <p className="text-[12.5px] text-ink/50">{s.email}</p>
+                  {!s.sample ? (
+                    resetNote?.id === s.id ? (
+                      <p role="status" className="mt-1 text-[12px] font-semibold text-mint">{resetNote.text}</p>
+                    ) : (
+                      <button type="button" onClick={() => void sendReset(s.id, s.email, s.name)} className="mt-1 text-[12px] font-semibold text-blue hover:underline">
+                        Send password reset
+                      </button>
+                    )
+                  ) : null}
                 </td>
                 <td className="px-3 py-3 text-ink/70">{s.country ?? <span className="text-ink/30">None</span>}</td>
                 <td className="px-3 py-3 text-ink/70">{fmtDate(s.joinedAt)}</td>

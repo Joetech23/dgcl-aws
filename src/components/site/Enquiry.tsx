@@ -3,8 +3,9 @@
 import { createContext, forwardRef, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { findTrack, tracks, type TrackId } from '@/config/tracks'
 import { courses } from '@/config/courses'
-import { partnerForCode, saveLead, useAccount } from '@/lib/backend'
-import { getReferral, normaliseCode } from '@/lib/backend/referral'
+import { saveLead, useAccount } from '@/lib/backend'
+import { getReferral } from '@/lib/backend/referral'
+import { PartnerSelect } from './PartnerSelect'
 import { buttonClass } from './ui'
 import { IconCheck, IconClose } from './icons'
 
@@ -80,7 +81,6 @@ function EnquiryModal({ prefill, onClose }: { prefill: Prefill; onClose: () => v
   const [error, setError] = useState<string | null>(null)
   const [sent, setSent] = useState<string | null>(null)
   const [code, setCode] = useState('')
-  const [partner, setPartner] = useState<string | null>(null)
   const first = useRef<HTMLInputElement | null>(null)
   const countries = useMemo(allCountries, [])
   const t = findTrack(track)!
@@ -97,13 +97,6 @@ function EnquiryModal({ prefill, onClose }: { prefill: Prefill; onClose: () => v
     }
   }, [onClose])
 
-  // Tell the learner whose code they are using, when it is a real partner.
-  useEffect(() => {
-    const c = normaliseCode(code)
-    if (c.length < 3) return setPartner(null)
-    const id = setTimeout(() => void partnerForCode(c).then(setPartner), 350)
-    return () => clearTimeout(id)
-  }, [code])
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -212,24 +205,7 @@ function EnquiryModal({ prefill, onClose }: { prefill: Prefill; onClose: () => v
                 ))}
               </Select>
             </div>
-            <label className="block">
-              <span className="font-display text-[13px] font-bold text-ink">
-                Partner or coupon code <span className="font-normal text-ink/45">(optional)</span>
-              </span>
-              <input
-                value={code}
-                onChange={(e) => setCode(normaliseCode(e.target.value))}
-                name="code"
-                autoComplete="off"
-                className="mt-1.5 block h-12 w-full rounded-xl border border-line bg-surface px-3.5 font-mono text-[15px] uppercase tracking-wide text-ink outline-none transition placeholder:normal-case placeholder:tracking-normal placeholder:text-ink/35 focus:border-blue focus:ring-4 focus:ring-blue/10"
-                placeholder="e.g. TECHHUB10"
-              />
-              {partner ? (
-                <span className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-semibold text-mint">
-                  <IconCheck size={14} /> Referred by {partner}
-                </span>
-              ) : null}
-            </label>
+            <PartnerSelect id="enquiry-partner" value={code} onChange={setCode} />
             <label className="block">
               <span className="font-display text-[13px] font-bold text-ink">
                 Anything we should know? <span className="font-normal text-ink/45">(optional)</span>

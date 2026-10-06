@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { signOut, updateProfile, useAccount } from '@/lib/backend'
+import { changePassword, signOut, updateProfile, useAccount } from '@/lib/backend'
 import { findTrack } from '@/config/tracks'
 import { displayName } from '@/lib/people'
 import { Avatar } from '@/components/app/AppShell'
@@ -95,6 +95,8 @@ export default function AccountPage() {
         </section>
       ) : null}
 
+      <PasswordCard />
+
       <section className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl bg-surface p-5 shadow-[0_1px_0_rgb(var(--line))]">
           <p className="text-[13px] text-ink/55">Points</p>
@@ -119,6 +121,51 @@ export default function AccountPage() {
         Log out
       </button>
     </div>
+  )
+}
+
+/** Set a new password while signed in. Works for admins and learners alike. */
+function PasswordCard() {
+  const [state, setState] = useState<{ busy?: boolean; error?: string; done?: boolean }>({})
+  return (
+    <section className="rounded-3xl bg-surface p-5 shadow-[0_1px_0_rgb(var(--line))] sm:p-6">
+      <h2 className="font-display text-[16px] font-extrabold text-ink">Password</h2>
+      <p className="mt-1 text-[14px] text-ink/60">Set a new password. If you signed up with Google, this adds a password so you can also log in with your email.</p>
+      <form
+        className="mt-4 grid gap-3 sm:grid-cols-2"
+        onSubmit={async (e) => {
+          e.preventDefault()
+          const form = e.currentTarget
+          const f = new FormData(form)
+          const next = String(f.get('new-password') ?? '')
+          if (next !== String(f.get('confirm-password') ?? '')) return setState({ error: 'The two passwords do not match.' })
+          setState({ busy: true })
+          const res = await changePassword(next)
+          if (res.ok === true) {
+            form.reset()
+            setState({ done: true })
+          } else setState({ error: res.ok === false ? res.error : 'Please try again.' })
+        }}
+      >
+        <Field label="New password" name="new-password" id="new-password" type="password" autoComplete="new-password" required minLength={8} />
+        <Field label="Repeat new password" name="confirm-password" id="confirm-password" type="password" autoComplete="new-password" required minLength={8} />
+        {state.error ? (
+          <p role="alert" className="rounded-xl bg-rose/10 px-3.5 py-2.5 text-[14px] text-rose sm:col-span-2">
+            {state.error}
+          </p>
+        ) : null}
+        <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+          <button type="submit" disabled={state.busy} className={buttonClass('primary', 'md')}>
+            {state.busy ? 'Saving…' : 'Change password'}
+          </button>
+          {state.done ? (
+            <span role="status" className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-mint">
+              <IconCheck size={16} /> Password changed
+            </span>
+          ) : null}
+        </div>
+      </form>
+    </section>
   )
 }
 
