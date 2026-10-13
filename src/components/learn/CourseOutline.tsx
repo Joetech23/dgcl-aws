@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import { catalog, type CatalogModule } from '@/config/catalog'
-import { moduleFraction, moduleState, type ModuleState } from '@/lib/access'
+import { isLocked, moduleFraction, moduleState, type ModuleState } from '@/lib/access'
+import { money } from '@/config/pricing'
 import type { Enrollment } from '@/lib/backend'
 import { IconCheck, IconChevron, IconClock, IconHand, IconLock, IconPlay } from '@/components/site/icons'
 import { moduleBadge, moduleName, sectionLabel } from '@/lib/course/names'
@@ -18,12 +19,14 @@ export function CourseOutline({
   index,
   completed,
   enrollment,
+  purchased,
   onSelect,
 }: {
   current: CatalogModule
   index: number
   completed: Set<string>
   enrollment: Enrollment | null
+  purchased: ReadonlySet<string>
   onSelect: (i: number) => void
 }) {
   const activeRef = useRef<HTMLButtonElement | null>(null)
@@ -34,7 +37,7 @@ export function CourseOutline({
   return (
     <nav aria-label="Course outline" className="space-y-2">
       {catalog.map((m) => {
-        const state = moduleState(m, completed, enrollment)
+        const state = moduleState(m, completed, enrollment, purchased)
         const open = m.slug === current.slug
         return (
           <div key={m.slug} className={`rounded-2xl bg-surface ${open ? 'shadow-[0_1px_0_rgb(var(--line)),0_12px_30px_-22px_rgba(0,0,102,0.35)]' : ''}`}>
@@ -44,7 +47,7 @@ export function CourseOutline({
               className="flex min-h-[60px] items-center gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-slate/60"
             >
               <Badge m={m} state={state} open={open} />
-              <span className={`min-w-0 flex-1 font-display text-[14px] font-bold leading-snug ${state === 'needs-programme' ? 'text-ink/50' : 'text-ink'}`}>
+              <span className={`min-w-0 flex-1 font-display text-[14px] font-bold leading-snug ${isLocked(state) ? 'text-ink/50' : 'text-ink'}`}>
                 {m.short}
               </span>
               <Status m={m} state={state} completed={completed} />
@@ -107,6 +110,7 @@ function Badge({ m, state, open }: { m: CatalogModule; state: ModuleState; open:
 }
 
 function Status({ m, state, completed }: { m: CatalogModule; state: ModuleState; completed: Set<string> }) {
+  if (state === 'needs-purchase') return <span className="shrink-0 rounded-full bg-gold/20 px-2 py-0.5 font-display text-[11.5px] font-extrabold text-[#7A5A00] dark:text-gold">{money(m.price ?? 0)}</span>
   if (state === 'needs-programme') return <IconLock size={16} className="shrink-0 text-ink/35" />
   const f = moduleFraction(m, completed)
   return (

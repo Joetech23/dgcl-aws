@@ -39,12 +39,12 @@ const STEPS: Step[] = [
   {
     target: 'nav-self',
     title: '3. Self-paced lessons',
-    body: 'Every module in one place. The Introduction and Modules 1 to 4 are free, and you can open them in any order.',
+    body: 'Every module in one place. The Introduction and Modules 1 and 2 are free, in any order. Modules 3 and 4 can be unlocked one at a time.',
   },
   {
     target: 'nav-live',
     title: '4. Instructor-led classes',
-    body: 'Prefer a teacher? Live classes run for AWS Cloud, DevOps Tools, Cybersecurity and Ethical Hacking, and Healthcare Data Analysis, AI and Machine Learning. Their recordings appear there too.',
+    body: 'Prefer a teacher? Live classes run for AWS Cloud, DevOps Tools, Cybersecurity and Ethical Hacking, and Healthcare Data Analysis, AI and Machine Learning. See what each one covers and book a consultation from there.',
   },
   {
     target: 'goals',

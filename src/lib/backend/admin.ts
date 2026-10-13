@@ -6,6 +6,7 @@ import { getProgressStore } from '@/lib/progress'
 import { SUPABASE_ON, sb } from './supabase'
 import { read, write, refresh, type Certificate, type User } from './index'
 import { normaliseCode } from './referral'
+import { CONSULTATION_FEE_USD } from '@/config/pricing'
 
 /**
  * Everything the admin panel reads and writes.
@@ -34,8 +35,13 @@ export type StudentRow = {
   finished: string[]
   streak: number
   certificate: string | null
+  /** Slugs of the priced modules open to this learner (bought, or opened by an admin). */
+  purchased?: string[]
   sample?: boolean
 }
+
+/** Money taken online, in whole US dollars. */
+export type Sales = { modules: number; moduleRevenue: number; consultations: number; consultationRevenue: number }
 
 export type LeadStatus = 'new' | 'contacted' | 'joined' | 'closed'
 export type LeadRow = {
@@ -51,6 +57,9 @@ export type LeadRow = {
   status: LeadStatus
   notes: string | null
   createdAt: string
+  /** Instructor-led: the consultation fee has been paid. */
+  consultationPaid?: boolean
+  paidAt?: string | null
   sample?: boolean
 }
 
@@ -69,6 +78,7 @@ export type AdminData = {
   leads: LeadRow[]
   partners: PartnerRow[]
   certificates: (Certificate & { userId: string })[]
+  sales: Sales
   preview: boolean
 }
 
@@ -87,19 +97,30 @@ function progressOf(completed: string[]) {
 export async function loadAdmin(): Promise<AdminData> {
   if (SUPABASE_ON) {
     const c = sb()
-    const [profiles, progress, leads, partners, certs] = await Promise.all([
+    const [profiles, progress, leads, partners, certs, purchases] = await Promise.all([
       c.from('profiles').select('*').order('created_at', { ascending: false }),
       c.from('progress').select('*'),
       c.from('leads').select('*').order('created_at', { ascending: false }),
       c.from('partners').select('*').order('created_at', { ascending: false }),
       c.from('certificates').select('*').order('issued_at', { ascending: false }),
+      // Empty (with an error we ignore) until supabase/migrations/0004_payments.sql has been run.
+      c.from('purchases').select('user_id, module_slug, amount_cents, source'),
     ])
     const err = profiles.error ?? leads.error ?? partners.error
     if (err) throw new Error(err.message)
     const byUser = new Map((progress.data ?? []).map((p) => [p.user_id as string, p]))
     const certBy = new Map((certs.data ?? []).map((x) => [x.user_id as string, x.code as string]))
+    const bought = (purchases.data ?? []) as { user_id: string; module_slug: string; amount_cents: number; source: string }[]
+    const online = bought.filter((b) => b.source === 'stripe')
+    const paidLeads = (leads.data ?? []).filter((l) => l.consultation_paid)
     return {
       preview: false,
+      sales: {
+        modules: online.length,
+        moduleRevenue: online.reduce((n, b) => n + (b.amount_cents ?? 0), 0) / 100,
+        consultations: paidLeads.length,
+        consultationRevenue: paidLeads.reduce((n, l) => n + ((l.amount_cents as number) ?? 0), 0) / 100,
+      },
       students: (profiles.data ?? []).map((p) => {
         const pr = byUser.get(p.id)
         return {
@@ -115,6 +136,7 @@ export async function loadAdmin(): Promise<AdminData> {
           referralCode: p.referral_code,
           streak: pr?.streak_days ?? 0,
           certificate: certBy.get(p.id) ?? null,
+          purchased: bought.filter((b) => b.user_id === p.id).map((b) => b.module_slug),
           ...progressOf((pr?.completed as string[]) ?? []),
         }
       }),
@@ -131,6 +153,8 @@ export async function loadAdmin(): Promise<AdminData> {
         status: l.status,
         notes: l.notes,
         createdAt: l.created_at,
+        consultationPaid: Boolean(l.consultation_paid),
+        paidAt: l.paid_at ?? null,
       })),
       partners: (partners.data ?? []).map((p) => ({
         id: p.id,
@@ -157,6 +181,18 @@ export async function setTrack(userId: string, track: TrackId | null) {
     const me = read<User>('dgcl-user')
     if (me?.id === userId) write('dgcl-enrollment', track ? { track, since: new Date().toISOString() } : null)
     else patchSample('dgcl-sample-tracks', userId, track)
+  }
+  await refresh()
+}
+
+/** Open a priced module for a learner who paid another way (bank transfer, a gift). */
+export async function grantModule(userId: string, slug: string) {
+  if (SUPABASE_ON) {
+    const { error } = await sb().from('purchases').insert({ user_id: userId, module_slug: slug, amount_cents: 0, source: 'admin' })
+    if (error) throw new Error(/relation .* does not exist|schema cache/i.test(error.message) ? 'Run supabase/migrations/0004_payments.sql first.' : error.message)
+  } else {
+    const all = read<{ userId: string; slug: string }[]>('dgcl-purchases') ?? []
+    write('dgcl-purchases', [...all.filter((x) => !(x.userId === userId && x.slug === slug)), { userId, slug }])
   }
   await refresh()
 }
@@ -302,6 +338,7 @@ function loadPreview(): AdminData {
       referralCode: me.referralCode ?? null,
       streak: streak?.days ?? 0,
       certificate: certs.find((c) => c.userId === me.id)?.code ?? null,
+      purchased: (read<{ userId: string; slug: string }[]>('dgcl-purchases') ?? []).filter((x) => x.userId === me.id).map((x) => x.slug),
       ...progressOf(p.completed),
     })
   }
@@ -318,6 +355,8 @@ function loadPreview(): AdminData {
     status: (l.status as LeadStatus) ?? 'new',
     notes: (l.notes as string) ?? null,
     createdAt: String(l.created_at),
+    consultationPaid: Boolean(l.consultation_paid),
+    paidAt: (l.paid_at as string) ?? null,
   }))
   const partners = read<PartnerRow[]>('dgcl-partners') ?? []
   const withSamples = partners.some((p) => p.code === 'TECHHUB10')
@@ -327,5 +366,7 @@ function loadPreview(): AdminData {
         { id: 'sample-p1', name: 'TechHub Lagos (sample)', email: 'partners@example.com', code: 'TECHHUB10', reward: '£50 per learner who joins', active: true, createdAt: new Date(Date.now() - 20 * 864e5).toISOString() },
         { id: 'sample-p2', name: 'CareerUK (sample)', email: null, code: 'CAREERUK', reward: '10% of first payment', active: true, createdAt: new Date(Date.now() - 9 * 864e5).toISOString() },
       ]
-  return { preview: true, students, leads: [...local, ...sampleLeads()], partners: withSamples, certificates: certs }
+  const paid = local.filter((l) => l.consultationPaid).length
+  const sales: Sales = { modules: 0, moduleRevenue: 0, consultations: paid, consultationRevenue: paid * CONSULTATION_FEE_USD }
+  return { preview: true, students, leads: [...local, ...sampleLeads()], partners: withSamples, certificates: certs, sales }
 }

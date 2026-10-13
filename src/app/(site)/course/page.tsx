@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Curriculum } from '@/components/site/Curriculum'
 import { ButtonLink, Container, Eyebrow } from '@/components/site/ui'
-import { catalog, FREE_COUNT, TOTAL_MODULES } from '@/config/catalog'
+import { catalog, FREE_COUNT, TOTAL_MODULES, FREE_MODULES_TEXT, PRICED_MODULES_TEXT, MODULE_PRICE_TEXT } from '@/config/catalog'
 import { IconArrowRight } from '@/components/site/icons'
 
 export const metadata: Metadata = { title: 'The full AWS Cloud course, free to start', alternates: { canonical: '/course/' } }
@@ -17,7 +17,7 @@ export default function CoursePage() {
           The full course, module by module
         </h1>
         <p className="mt-4 text-[16.5px] leading-relaxed text-ink/60">
-          An Introduction and {TOTAL_MODULES} modules, about {hours} hours of learning. The Introduction and the first {FREE_COUNT} modules are free.
+          An Introduction and {TOTAL_MODULES} modules, about {hours} hours of learning. The Introduction and {FREE_MODULES_TEXT} are free, and {PRICED_MODULES_TEXT} are {MODULE_PRICE_TEXT} each.
         </p>
       </div>
 

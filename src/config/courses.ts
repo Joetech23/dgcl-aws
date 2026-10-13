@@ -1,56 +1,54 @@
 /**
- * DGCL's four core domains. AWS Cloud Training is the self-paced course on
- * this site today; the other three are taught in live instructor classes,
- * and the recordings of those classes are published here as they are ready.
+ * DGCL's four core products. AWS Cloud Training is also the self-paced course
+ * on this site; all four are taught as instructor-led training, which a
+ * learner joins by booking a one-to-one consultation (see pricing.ts for the
+ * fee). There are no recorded classes on the site.
  *
- * Copy is from DGCL's current course cards. Fuller details are to come from
- * DGCL: add them here and every page that lists courses updates.
+ * Summaries are from DGCL's course cards. Outlines are DGCL's tables of
+ * contents, received 12 October 2026.
  */
 
-/** One live instructor class. Add `video` when its recording is uploaded. */
-export type LiveClass = {
-  title: string
-  /** A link to the recording (YouTube, Vimeo, Drive). Empty until uploaded. */
-  video?: string
-  /** Optional one-line description of what the class covers. */
-  about?: string
+/** One block of a table of contents: a heading (optional) and its lines. */
+export type OutlineSection = {
+  heading?: string
+  items: string[]
+  /** Number the lines 1, 2, 3... Use for modules; leave off for weeks or bullet points. */
+  numbered?: boolean
 }
 
 export type Course = {
   id: string
   title: string
-  /** The domain's name, for chips and tight spaces. */
+  /** The product's name, for chips and tight spaces. */
   short: string
   /** Short line under the title. */
   summary: string
   /** Tools or topics, shown as tags. */
   topics: string[]
-  /** How it is taught today, in a few words. */
-  schedule: string
+  /**
+   * What a learner will be taught, in order. While it is empty the page lists
+   * the topics above instead. (AWS takes its modules from catalog.ts, so the
+   * self-paced course and this list can never disagree.)
+   */
+  outline: OutlineSection[]
+  /** A few words beside "What you will learn", e.g. "7 modules". */
+  outlineLabel?: string
   /** True when the animated online course is live on this site. */
   online: boolean
-  /** Live instructor classes, in order. Listed on the Instructor-led page. */
-  liveClasses: LiveClass[]
   /** Card accent, from the DGCL palette. */
   tint: string
   icon: 'cloud' | 'pipeline' | 'shield' | 'brain'
 }
-
-// Recordings are being produced. To publish one, add its link:
-//   { title: 'Live class 1', video: 'https://...', about: 'Git and version control' }
-// To list more classes, add more lines.
-const upcoming = (count: number): LiveClass[] => Array.from({ length: count }, (_, i) => ({ title: `Live class ${i + 1}` }))
 
 export const courses: Course[] = [
   {
     id: 'aws',
     short: 'AWS Cloud',
     title: 'AWS Cloud Training CO2/CO3',
-    summary: 'Master AWS from first principles to the Cloud Practitioner exam. The Introduction and Modules 1 to 4 are free.',
+    summary: 'Master AWS from first principles to the Cloud Practitioner exam.',
     topics: ['EC2', 'IAM', 'S3', 'VPC', 'Serverless'],
-    schedule: 'Online now, with live instructor classes',
+    outline: [],
     online: true,
-    liveClasses: [],
     tint: '#000099',
     icon: 'cloud',
   },
@@ -60,9 +58,22 @@ export const courses: Course[] = [
     title: 'DevOps Tools Training',
     summary: 'Master the DevOps toolchain used in real teams, hands-on.',
     topics: ['Jenkins', 'Terraform', 'Kubernetes', 'Git', 'Docker', 'Ansible'],
-    schedule: 'Live instructor classes',
+    outlineLabel: '7 modules',
+    outline: [
+      {
+        numbered: true,
+        items: [
+          'DevOps Foundations and Linux Essentials: Installing Ubuntu on AWS EC2',
+          'Source Code Management with Git',
+          'Infrastructure as Code with Terraform',
+          'Containerisation with Docker',
+          'Continuous Integration with Jenkins',
+          'Container Orchestration with Kubernetes',
+          'DevOps Monitoring Tools: ELK Stack, Prometheus, Grafana and Dynatrace',
+        ],
+      },
+    ],
     online: false,
-    liveClasses: upcoming(4),
     tint: '#F5871F',
     icon: 'pipeline',
   },
@@ -72,9 +83,9 @@ export const courses: Course[] = [
     title: 'Cybersecurity and Ethical Hacking',
     summary: 'CEH Pro training in penetration testing, network security and digital forensics.',
     topics: ['Pen testing', 'Network security', 'Forensics', 'CEH'],
-    schedule: 'Live instructor classes',
+    // Table of contents still to come from DGCL: paste it here like the others.
+    outline: [],
     online: false,
-    liveClasses: upcoming(4),
     tint: '#E5484D',
     icon: 'shield',
   },
@@ -84,9 +95,58 @@ export const courses: Course[] = [
     title: 'Healthcare Data Analysis, AI and Machine Learning',
     summary: 'Become a data professional with an industry-recognised certification course.',
     topics: ['Healthcare data', 'Python', 'AI', 'Machine learning'],
-    schedule: 'Live instructor classes',
+    outlineLabel: '4 months and a capstone project',
+    outline: [
+      {
+        heading: 'Month one',
+        items: [
+          'Week 1A: Introduction to Data Analysis',
+          'Week 1B: Basic Linux, Folders and Files (optional)',
+          'Week 2: Data Cleaning with Microsoft Excel',
+          'Week 3: Dashboarding with Microsoft Excel',
+          'Week 4: Forecasting and Time Series Analysis with Excel',
+        ],
+      },
+      {
+        heading: 'Month two',
+        items: [
+          'Week 5A: Data Visualisation with Tableau (Part I)',
+          'Week 5B: Version Control System: Git and GitHub (optional)',
+          'Week 6: Dashboarding with Tableau (Part II)',
+          'Week 7: Data Visualisation with Microsoft Power BI (Part I)',
+          'Week 8: Dashboarding with Microsoft Power BI (Part II)',
+        ],
+      },
+      {
+        heading: 'Month three',
+        items: [
+          'Introduction to Artificial Intelligence (AI)',
+          'Amazon Bedrock and GenAI',
+          'Prompt Engineering',
+          'Amazon Q',
+          'AI and Machine Learning (ML)',
+          'AWS Managed AI Services',
+          'Amazon SageMaker',
+          'Responsible AI, Security, Compliance and Governance',
+        ],
+      },
+      {
+        heading: 'Month four',
+        items: ['Python for Healthcare Data Analysis', 'SQL for Healthcare Data Analysis'],
+      },
+      {
+        heading: 'Capstone project and portfolio building',
+        items: [
+          'Using a healthcare dataset and defining a problem statement',
+          'End-to-end workflow: cleaning, analysis, then visualisation',
+          'Combining tools (Excel, Power BI, Tableau)',
+          'Writing a short report with insights and recommendations',
+          'Presenting findings (5-minute presentation)',
+          'Assignment: share your portfolio link',
+        ],
+      },
+    ],
     online: false,
-    liveClasses: upcoming(4),
     tint: '#12B981',
     icon: 'brain',
   },

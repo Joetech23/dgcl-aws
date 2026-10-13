@@ -8,12 +8,14 @@ export function generateStaticParams() {
   return catalog.map((m) => ({ slug: m.slug }))
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const m = findModule(params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const m = findModule(slug)
   return { title: m ? `${moduleName(m.number)}: ${m.title}` : 'Lesson' }
 }
 
-export default function LearnPage({ params }: { params: { slug: string } }) {
-  if (!findModule(params.slug)) notFound()
-  return <LearnView slug={params.slug} />
+export default async function LearnPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  if (!findModule(slug)) notFound()
+  return <LearnView slug={slug} />
 }

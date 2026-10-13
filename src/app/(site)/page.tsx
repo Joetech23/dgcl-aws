@@ -1,5 +1,6 @@
 import Image from 'next/image'
-import { catalog, FREE_COUNT, TOTAL_MODULES } from '@/config/catalog'
+import { catalog, FREE_COUNT, FREE_MODULES_TEXT, MODULE_PRICE_TEXT, PRICED_MODULES_TEXT, PROGRAMME_MODULES_TEXT, TOTAL_MODULES } from '@/config/catalog'
+import { CONSULTATION_FEE_USD, money } from '@/config/pricing'
 import { modules } from '@/content/modules'
 import { courses } from '@/config/courses'
 import { SITE } from '@/config/site'
@@ -14,7 +15,8 @@ import { CourseGrid, CourseIcon } from '@/components/site/CourseGrid'
 import { ButtonLink, Container, Eyebrow, Logo, SectionTitle } from '@/components/site/ui'
 import { IconArrowRight, IconAward, IconCheck, IconClock, IconHand, IconPhone, IconPlay } from '@/components/site/icons'
 
-const freeModules = catalog.filter((m) => m.free)
+// The modules a learner can take today: the free ones, then the priced ones.
+const openModules = catalog.filter((m) => m.free || m.price !== null)
 const lessonCount = modules.reduce((n, m) => n + m.slides.length, 0)
 
 // What search engines read: who runs the site and what it teaches.
@@ -64,7 +66,7 @@ export default function Home() {
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border border-line bg-surface py-1 pl-1 pr-3 text-[12.5px] font-semibold text-ink/70">
               <span className="rounded-full bg-mint/10 px-2 py-0.5 font-display text-[11px] font-extrabold text-[#077A55] dark:text-mint">NEW</span>
-              AWS Cloud Training is online, with {FREE_COUNT} modules free
+              AWS Cloud Training is online, with a free start
             </p>
             <h1 className="mt-5 font-display text-[clamp(2.3rem,5.2vw,3.7rem)] font-extrabold leading-[1.02] tracking-[-0.035em] text-ink">
               Launch your tech career.{' '}
@@ -151,7 +153,7 @@ export default function Home() {
               <SectionTitle className="mt-2">Four tech domains, one academy</SectionTitle>
             </div>
             <p className="max-w-md text-[15px] leading-relaxed text-ink/60">
-              AWS Cloud Training is online now with a free start. Every domain is also taught in live instructor classes, and their recordings are being added here.
+              AWS Cloud Training is online now with a free start. All four are taught live by a DGCL instructor: book a one-to-one consultation for {money(CONSULTATION_FEE_USD)} to join.
             </p>
           </div>
           <div className="mt-10">
@@ -165,16 +167,16 @@ export default function Home() {
         <Container>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <Eyebrow>AWS Cloud Training · free to start</Eyebrow>
-              <SectionTitle className="mt-2">The Introduction and {FREE_COUNT} modules, on us</SectionTitle>
+              <Eyebrow>AWS Cloud Training · self-paced</Eyebrow>
+              <SectionTitle className="mt-2">Start free, then {MODULE_PRICE_TEXT} a module</SectionTitle>
             </div>
             <p className="max-w-sm text-[15px] leading-relaxed text-ink/60">
-              Create an account and start straight away, in any order. No payment details, no trial that runs out.
+              The Introduction and {FREE_MODULES_TEXT} are free: create an account and start straight away. {PRICED_MODULES_TEXT} are {MODULE_PRICE_TEXT} each, paid once.
             </p>
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {freeModules.map((m) => (
+            {openModules.map((m) => (
               <a
                 key={m.slug}
                 href={`/signup/?next=/learn/${m.slug}/`}
@@ -182,10 +184,12 @@ export default function Home() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-display text-[13px] font-extrabold text-blue">{moduleName(m.number)}</span>
-                  {m.lesson ? (
+                  {m.price !== null ? (
+                    <span className="rounded-full bg-gold/20 px-2 py-0.5 font-display text-[11.5px] font-extrabold text-[#7A5A00] dark:text-gold">{money(m.price)}</span>
+                  ) : m.lesson ? (
                     <span className="inline-flex items-center gap-1 text-[12.5px] text-ink/45">
                       <IconClock size={14} />
-                      {m.minutes} min
+                      {m.minutes} min · Free
                     </span>
                   ) : (
                     <span className="rounded-full bg-gold/20 px-2 py-0.5 font-display text-[11px] font-bold text-[#7A5A00] dark:text-gold">Coming soon</span>
@@ -201,7 +205,7 @@ export default function Home() {
                   ))}
                 </ul>
                 <span className="mt-5 inline-flex items-center gap-1.5 font-display text-[14px] font-bold text-blue">
-                  {m.lesson ? 'Start free' : 'Sign up to be told'}
+                  {m.price !== null ? `Unlock for ${money(m.price)}` : m.lesson ? 'Start free' : 'Sign up to be told'}
                   <IconArrowRight size={16} className="transition group-hover:translate-x-0.5" />
                 </span>
               </a>
@@ -247,7 +251,7 @@ export default function Home() {
             <Eyebrow>The full AWS course</Eyebrow>
             <SectionTitle className="mt-2">An Introduction and {TOTAL_MODULES} modules, to the exam</SectionTitle>
             <p className="mt-4 text-[15.5px] leading-relaxed text-ink/60">
-              Start with the Introduction and Modules 1 to {FREE_COUNT}, free. When you are ready, open Modules 5 to {TOTAL_MODULES} self-paced, or learn them live with an instructor.
+              Start with the Introduction and {FREE_MODULES_TEXT}, free. Carry on with {PRICED_MODULES_TEXT} for {MODULE_PRICE_TEXT} each. {PROGRAMME_MODULES_TEXT} open with a programme, self-paced or with an instructor.
             </p>
             <ButtonLink href="#plans" variant="secondary" className="mt-6">
               See the ways to learn
@@ -264,7 +268,7 @@ export default function Home() {
             <Eyebrow>Ways to learn</Eyebrow>
             <SectionTitle className="mt-2">Keep going your way</SectionTitle>
             <p className="mt-4 text-[15.5px] leading-relaxed text-ink/60">
-              Pick self-paced or instructor-led and leave your details. A DGCL adviser will call you with the price for your country, usually within one working day.
+              For the whole course, pick self-paced or instructor-led. Self-paced: leave your details and a DGCL adviser comes back with the price for your country. Instructor-led: book a one-to-one consultation for {money(CONSULTATION_FEE_USD)}.
             </p>
           </div>
           <div className="mt-12">

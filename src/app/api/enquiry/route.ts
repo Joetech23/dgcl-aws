@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { enquiryReceipt, salesAlert, type EnquiryEmailInput } from '@/lib/email/enquiry'
+import { salesInbox, sendEmail } from '@/lib/server/email'
+import { siteOrigin } from '@/lib/server/supabase'
 
 /**
  * Sends the two enquiry emails through Resend: an alert to DGCL's sales
@@ -18,9 +20,6 @@ import { enquiryReceipt, salesAlert, type EnquiryEmailInput } from '@/lib/email/
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const FROM_DEFAULT = 'DGCL Digital Cloud Academy <no-reply@freelearning.dgclgroup.com>'
-const SALES_DEFAULT = 'info@dgclgroup.com'
-
 // A small brake on abuse: this route emails whatever address it is given, so
 // each visitor may trigger it only a few times in a short window.
 const WINDOW_MS = 10 * 60 * 1000
@@ -37,16 +36,6 @@ function limited(ip: string) {
 }
 
 const clean = (v: unknown, max: number) => String(v ?? '').replace(/[\r\n]+/g, ' ').trim().slice(0, max)
-
-async function send(key: string, payload: Record<string, unknown>) {
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-  if (!res.ok) console.error('[enquiry email]', res.status, (await res.text()).slice(0, 300))
-  return res.ok
-}
 
 export async function POST(req: NextRequest) {
   // Only the site's own form may call this, not another website's script.
@@ -68,6 +57,7 @@ export async function POST(req: NextRequest) {
     course: clean(body.course, 160),
     message: String(body.message ?? '').trim().slice(0, 1500) || null,
     referralCode: clean(body.referralCode, 24) || null,
+    awaitingPayment: body.awaitingPayment === true,
   }
   if (!e.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.email) || !e.course) {
     return NextResponse.json({ ok: false, error: 'Missing details' }, { status: 400 })
@@ -76,20 +66,18 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   if (limited(ip)) return NextResponse.json({ ok: false, error: 'Too many requests' }, { status: 429 })
 
-  const key = process.env.RESEND_API_KEY
-  if (!key) return NextResponse.json({ ok: true, sent: false })
+  if (!process.env.RESEND_API_KEY) return NextResponse.json({ ok: true, sent: false })
 
-  const from = process.env.EMAIL_FROM || FROM_DEFAULT
-  const sales = process.env.SALES_EMAIL || SALES_DEFAULT
+  const sales = salesInbox()
   // Links and the logo point at the public address, not the internal one the server hears on.
-  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'freelearning.dgclgroup.com'
-  const siteUrl = process.env.SITE_URL || `https://${host}`
+  const siteUrl = process.env.SITE_URL || siteOrigin(req)
 
   const alert = salesAlert(e, siteUrl)
   const receipt = enquiryReceipt(e, siteUrl)
   const [toSales, toLearner] = await Promise.all([
-    send(key, { from, to: [sales], reply_to: e.email, subject: alert.subject, html: alert.html }),
-    send(key, { from, to: [e.email], reply_to: sales, subject: receipt.subject, html: receipt.html }),
+    sendEmail({ to: sales, replyTo: e.email, ...alert }),
+    // With a consultation fee still to pay, the learner hears from us once it is paid.
+    e.awaitingPayment ? Promise.resolve(true) : sendEmail({ to: e.email, replyTo: sales, ...receipt }),
   ])
   return NextResponse.json({ ok: true, sent: toSales && toLearner })
 }

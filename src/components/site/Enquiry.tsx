@@ -3,7 +3,8 @@
 import { createContext, forwardRef, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { findTrack, tracks, type TrackId } from '@/config/tracks'
 import { courses } from '@/config/courses'
-import { saveLead, useAccount } from '@/lib/backend'
+import { notifyLead, payConsultation, saveLead, useAccount, type LeadInput } from '@/lib/backend'
+import { CONSULTATION_FEE_USD, money } from '@/config/pricing'
 import { getReferral } from '@/lib/backend/referral'
 import { PartnerSelect } from './PartnerSelect'
 import { buttonClass } from './ui'
@@ -11,9 +12,17 @@ import { IconCheck, IconClose } from './icons'
 
 /**
  * "Talk to us" form. Any button on the site can open it with a track and a
- * course already chosen. The details go to DGCL's sales team, who call back
+ * course already chosen. The details go to DGCL's sales team, who come back
  * with a price for the learner's country.
+ *
+ * An instructor-led enquiry books a one-to-one consultation, confirmed by a
+ * small fee paid on Stripe straight after the form. If online payment is not
+ * switched on, the enquiry is still sent and the team arranges the fee.
  */
+const FEE = money(CONSULTATION_FEE_USD)
+
+/** What the learner sees after the form: sent, booked, or a payment still to make. */
+type Sent = { name: string; kind: 'sent' | 'booked' | 'arrange' } | { name: string; kind: 'unpaid'; leadId: string; error: string }
 
 type Prefill = { track?: TrackId; course?: string }
 const Ctx = createContext<(p?: Prefill) => void>(() => {})
@@ -79,7 +88,7 @@ function EnquiryModal({ prefill, onClose }: { prefill: Prefill; onClose: () => v
   const [track, setTrack] = useState<TrackId>(prefill.track ?? 'self-paced')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [sent, setSent] = useState<string | null>(null)
+  const [sent, setSent] = useState<Sent | null>(null)
   const [code, setCode] = useState('')
   const first = useRef<HTMLInputElement | null>(null)
   const countries = useMemo(allCountries, [])
@@ -102,6 +111,7 @@ function EnquiryModal({ prefill, onClose }: { prefill: Prefill; onClose: () => v
     e.preventDefault()
     const f = new FormData(e.currentTarget)
     const name = String(f.get('name') ?? '').trim()
+    const first = name.split(' ')[0] || 'there'
     const phone = String(f.get('phone') ?? '').trim()
     if (phone.replace(/\D/g, '').length < 7) {
       setError('Please add a phone number our team can call, with the country code.')
@@ -109,7 +119,7 @@ function EnquiryModal({ prefill, onClose }: { prefill: Prefill; onClose: () => v
     }
     setBusy(true)
     setError(null)
-    const res = await saveLead({
+    const input: LeadInput = {
       name,
       email: String(f.get('email') ?? ''),
       phone,
@@ -118,12 +128,54 @@ function EnquiryModal({ prefill, onClose }: { prefill: Prefill; onClose: () => v
       course: String(f.get('course') ?? ''),
       message: String(f.get('message') ?? ''),
       referralCode: code,
-    })
+    }
+    const res = await saveLead(input)
+    if (!res.ok) {
+      setBusy(false)
+      setError(res.error)
+      return
+    }
+    if (track !== 'instructor-led') {
+      notifyLead(input)
+      setBusy(false)
+      setSent({ name: first, kind: 'sent' })
+      return
+    }
+
+    // Instructor-led: the consultation fee confirms the booking.
+    const pay = await payConsultation(res.id)
+    if (pay.ok && pay.url) {
+      notifyLead(input, true)
+      window.location.assign(pay.url)
+      return
+    }
     setBusy(false)
-    if (!res.ok) setError(res.error ?? 'Please try again.')
-    else setSent(name.split(' ')[0] || 'there')
+    if (pay.ok) {
+      notifyLead(input)
+      setSent({ name: first, kind: 'booked' })
+    } else if (pay.notConfigured) {
+      // Online payment is off: the team arranges the fee when they call.
+      notifyLead(input)
+      setSent({ name: first, kind: 'arrange' })
+    } else {
+      notifyLead(input, true)
+      setSent({ name: first, kind: 'unpaid', leadId: res.id, error: pay.error })
+    }
   }
 
+  async function payNow(leadId: string) {
+    setBusy(true)
+    const pay = await payConsultation(leadId)
+    if (pay.ok && pay.url) {
+      window.location.assign(pay.url)
+      return
+    }
+    setBusy(false)
+    if (pay.ok) setSent((x) => (x ? { name: x.name, kind: 'booked' } : x))
+    else setSent((x) => (x ? { name: x.name, kind: 'unpaid', leadId, error: pay.error } : x))
+  }
+
+  const live = track === 'instructor-led'
   const courseOptions = track === 'self-paced' ? courses.filter((c) => c.online) : courses
 
   return (
@@ -135,9 +187,9 @@ function EnquiryModal({ prefill, onClose }: { prefill: Prefill; onClose: () => v
           <button type="button" onClick={onClose} aria-label="Close" className="absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-xl text-white/80 hover:bg-white/10 hover:text-white">
             <IconClose size={20} />
           </button>
-          <p className="font-display text-[12px] font-bold uppercase tracking-[0.14em] text-gold">{sent ? 'Sent' : 'Talk to our team'}</p>
+          <p className="font-display text-[12px] font-bold uppercase tracking-[0.14em] text-gold">{sent ? (sent.kind === 'booked' ? 'Booked' : sent.kind === 'unpaid' ? 'One more step' : 'Sent') : live ? 'Book a consultation' : 'Talk to our team'}</p>
           <h2 id="enquiry-title" className="mt-1 pr-10 font-display text-[23px] font-extrabold leading-tight">
-            {sent ? `Thank you, ${sent}.` : `${t.name} learning`}
+            {sent ? `Thank you, ${sent.name}.` : `${t.name} learning`}
           </h2>
           {!sent ? (
             <div role="radiogroup" aria-label="Way to learn" className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-white/10 p-1">
@@ -162,18 +214,40 @@ function EnquiryModal({ prefill, onClose }: { prefill: Prefill; onClose: () => v
             <span className="anim-pop mx-auto grid h-16 w-16 place-items-center rounded-full bg-mint text-white">
               <IconCheck size={32} />
             </span>
-            <p className="mt-5 text-[15.5px] leading-relaxed text-ink/70">
-              Our team will call or email you within one working day with the options and price for your country.
-            </p>
-            <p className="mt-2 text-[14px] text-ink/50">In the meantime, the free modules are open to you.</p>
-            <button type="button" onClick={onClose} className={buttonClass('primary', 'lg', 'mt-6 w-full')}>
-              Done
+            {sent.kind === 'unpaid' ? (
+              <>
+                <p className="mt-5 text-[15.5px] leading-relaxed text-ink/70">
+                  Your details are saved. Pay the {FEE} consultation fee to confirm your one-to-one meeting.
+                </p>
+                <p role="alert" className="mt-3 rounded-xl bg-rose/10 px-3.5 py-2.5 text-[14px] text-rose">
+                  {sent.error}
+                </p>
+                <button type="button" disabled={busy} onClick={() => void payNow(sent.leadId)} className={buttonClass('primary', 'lg', 'mt-5 w-full')}>
+                  {busy ? 'Opening secure payment…' : `Pay ${FEE} now`}
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="mt-5 text-[15.5px] leading-relaxed text-ink/70">
+                  {sent.kind === 'booked'
+                    ? `Your consultation is booked. A DGCL adviser will email or call you within one working day to agree a time. If you enrol, the ${FEE} comes off your training fee.`
+                    : sent.kind === 'arrange'
+                      ? `Our team will contact you within one working day to arrange your one-to-one consultation and the ${FEE} fee.`
+                      : 'Our team will call or email you within one working day with the options and price for your country.'}
+                </p>
+                <p className="mt-2 text-[14px] text-ink/50">In the meantime, the free modules are open to you.</p>
+              </>
+            )}
+            <button type="button" onClick={onClose} className={buttonClass(sent.kind === 'unpaid' ? 'secondary' : 'primary', 'lg', sent.kind === 'unpaid' ? 'mt-2 w-full' : 'mt-6 w-full')}>
+              {sent.kind === 'unpaid' ? 'Pay later' : 'Done'}
             </button>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-3.5 overflow-y-auto p-5 sm:p-6">
             <p className="text-[14px] leading-relaxed text-ink/60">
-              Leave your details and a DGCL adviser will contact you with a price for your country. No payment now.
+              {live
+                ? `Book a one-to-one consultation with a DGCL adviser. The fee is ${FEE}, paid on the next step, and it comes off your training fee if you enrol.`
+                : 'Leave your details and a DGCL adviser will contact you with a price for your country. No payment now.'}
             </p>
             <Input ref={first} label="Full name" name="name" autoComplete="name" required defaultValue={user?.name ?? ''} />
             <div className="grid gap-3.5 sm:grid-cols-2">
@@ -223,7 +297,7 @@ function EnquiryModal({ prefill, onClose }: { prefill: Prefill; onClose: () => v
               </p>
             ) : null}
             <button type="submit" disabled={busy} className={buttonClass('primary', 'lg', 'w-full')}>
-              {busy ? 'Sending…' : 'Send my details'}
+              {busy ? (live ? 'One moment…' : 'Sending…') : live ? `Continue to payment, ${FEE}` : 'Send my details'}
             </button>
             <p className="text-center text-[12px] leading-relaxed text-ink/45">DGCL will only use these details to contact you about your training.</p>
           </form>

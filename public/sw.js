@@ -1,12 +1,12 @@
 /*
- * FreeTechPath service worker. Deliberately small:
+ * Learn Tech Hub service worker. Deliberately small:
  *  - build files (/_next/static) and images never change under the same name,
  *    so they are served from the cache after the first visit;
  *  - pages always come from the network, so learners never see a stale site;
  *    with no connection they get a friendly offline page instead of an error;
  *  - audio, video and anything that is not a plain GET is left alone.
  */
-const CACHE = 'ftp-static-v1'
+const CACHE = 'lth-static-v2'
 const OFFLINE = '/offline.html'
 
 self.addEventListener('install', (event) => {

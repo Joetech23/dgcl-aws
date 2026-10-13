@@ -1,13 +1,14 @@
 import Link from 'next/link'
 import { catalog } from '@/config/catalog'
+import { money } from '@/config/pricing'
 import { IconClock, IconLock, IconPlay } from './icons'
 import { Pill } from './ui'
 import { moduleBadge, moduleName, sectionLabel } from '@/lib/course/names'
 
 /**
  * All fifteen modules as one path. Free modules link straight to sign-up and
- * the lesson; paid ones show what they cover and a lock, so the learner can
- * see exactly what the packages buy.
+ * the lesson; a priced module shows its price and leads to the same place;
+ * the rest show a lock and lead to the ways to learn.
  */
 export function Curriculum({ compact = false }: { compact?: boolean }) {
   return (
@@ -30,7 +31,7 @@ export function Curriculum({ compact = false }: { compact?: boolean }) {
           </span>
 
           <Link
-            href={m.free ? `/signup/?next=/learn/${m.slug}/` : '/plans/'}
+            href={m.free || m.price !== null ? `/signup/?next=/learn/${m.slug}/` : '/plans/'}
             className="group flex min-w-0 flex-1 flex-col gap-2 rounded-2xl border border-line bg-surface p-4 transition hover:border-blue/30 hover:shadow-lift sm:flex-row sm:items-center sm:gap-5"
           >
             <div className="min-w-0 flex-1">
@@ -47,10 +48,12 @@ export function Curriculum({ compact = false }: { compact?: boolean }) {
                   <IconPlay size={10} />
                   Free
                 </Pill>
+              ) : m.price !== null ? (
+                <Pill tone="gold">{money(m.price)}</Pill>
               ) : (
                 <Pill tone="grey">
                   <IconLock size={12} />
-                  Paid
+                  Programme
                 </Pill>
               )}
             </div>

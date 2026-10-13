@@ -76,9 +76,9 @@ export function Logo({ className = 'h-9 w-auto', invert = false }: { className?:
 
 /**
  * The header mark. It shows the DGCL logo, a light passes across it, and it
- * becomes the FreeTechPath wordmark; then back again. Both sit in one box so
+ * becomes the LearnTechHub wordmark; then back again. Both sit in one box so
  * nothing around it moves. Pure CSS (see `.brand-*` in globals.css); with
- * reduced motion it rests on the FreeTechPath wordmark.
+ * reduced motion it rests on the LearnTechHub wordmark.
  */
 export function Brand({ className = 'h-9' }: { className?: string }) {
   return (
@@ -95,7 +95,7 @@ export function Brand({ className = 'h-9' }: { className?: string }) {
           <circle cx="78" cy="32" r="10" fill="#FFC000" />
         </svg>
         <span className="ml-2 flex flex-col justify-center whitespace-nowrap leading-none">
-          <span className="brand-word font-display text-[17px] font-extrabold tracking-[-0.02em]">FreeTechPath</span>
+          <span className="brand-word font-display text-[17px] font-extrabold tracking-[-0.02em]">LearnTechHub</span>
           <span className="mt-[3px] text-[9.5px] font-semibold text-ink/55">by DGCL Digital Cloud Academy</span>
         </span>
       </span>

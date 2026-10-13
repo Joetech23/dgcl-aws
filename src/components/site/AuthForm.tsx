@@ -159,6 +159,9 @@ export function AuthForm({ mode }: { mode: 'signup' | 'login' }) {
         <p className="mt-2 text-[15px] leading-relaxed text-ink/60">
           We sent a 6-digit code to <strong className="font-semibold text-ink">{step.email}</strong>. It expires in one hour.
         </p>
+        <p className="mt-2 text-[13.5px] leading-relaxed text-ink/55">
+          Not in your inbox after a minute? Look in your Spam or Junk folder, and mark the email &ldquo;Not spam&rdquo; so the next one arrives normally.
+        </p>
         {backend === 'preview' ? <p className="mt-3 rounded-xl bg-gold/15 px-3.5 py-2.5 text-[13px] font-semibold text-[#7A5A00] dark:text-gold">{PREVIEW_CODE_HINT}</p> : null}
         <form
           className="mt-6 space-y-4"

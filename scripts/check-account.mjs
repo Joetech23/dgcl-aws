@@ -75,7 +75,7 @@ check('admin can send a reset code', await page.getByText('Reset code sent').isV
 // Enquiry form: the same list.
 await page.goto(BASE + '/')
 await page.locator('#plans').scrollIntoViewIfNeeded()
-await page.getByRole('button', { name: 'Ask about live classes' }).click()
+await page.locator('#plans').getByRole('button', { name: 'Book a consultation' }).click()
 const ep = page.getByRole('dialog').locator('#enquiry-partner')
 await ep.waitFor()
 check('enquiry form has the partner list', (await ep.locator('option').count()) >= 2)

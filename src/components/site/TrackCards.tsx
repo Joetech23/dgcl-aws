@@ -2,14 +2,16 @@
 
 import { tracks } from '@/config/tracks'
 import { courses } from '@/config/courses'
+import { CONSULTATION_FEE_USD, money } from '@/config/pricing'
 import { EnquireButton } from './Enquiry'
 import { buttonClass } from './ui'
 import { IconCheck, IconVideo, IconPlay } from './icons'
 import { CourseIcon } from './CourseGrid'
 
 /**
- * The two ways to learn, side by side. No prices: each button opens the
- * enquiry form with that track chosen, and sales quote by country.
+ * The two ways to learn, side by side. A programme has no public price: each
+ * button opens the enquiry form with that track chosen, and DGCL quotes by
+ * country. Instructor-led starts with a paid one-to-one consultation.
  */
 export function TrackCards() {
   return (
@@ -61,7 +63,9 @@ export function TrackCards() {
             ) : null}
 
             <p className={`relative mt-6 text-[13px] ${live ? 'text-white/55' : 'text-ink/50'}`}>
-              Pricing depends on your country. Our team will quote you personally.
+              {live
+                ? `Starts with a ${money(CONSULTATION_FEE_USD)} one-to-one consultation, which comes off your training fee if you enrol.`
+                : 'Pricing depends on your country. Our team will quote you personally.'}
             </p>
             <EnquireButton track={t.id} className={buttonClass(live ? 'gold' : 'primary', 'lg', 'relative mt-3 w-full')}>
               {t.cta}

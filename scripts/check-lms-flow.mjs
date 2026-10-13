@@ -61,7 +61,7 @@ for (const [label, w, h] of [['desktop', 1440, 900], ['phone', 390, 844]]) {
 
   // The enquiry form from the landing page.
   await page.locator('#plans').scrollIntoViewIfNeeded()
-  await page.getByRole('button', { name: 'Ask about live classes' }).click()
+  await page.locator('#plans').getByRole('button', { name: 'Book a consultation' }).click()
   const dialog = page.getByRole('dialog')
   await dialog.locator('#enquiry-partner').waitFor()
   check('enquiry form preselects the partner from the link', (await dialog.locator('#enquiry-partner').inputValue()) === 'TECHHUB10')
@@ -70,8 +70,10 @@ for (const [label, w, h] of [['desktop', 1440, 900], ['phone', 390, 844]]) {
   await dialog.getByLabel('Email').fill(`tobi.${label}@example.com`)
   await dialog.getByLabel('Phone (with country code)').fill('+234 803 000 0000')
   await dialog.locator('select[name="country"]').selectOption('Nigeria')
-  await dialog.getByRole('button', { name: 'Send my details' }).click()
-  check('enquiry is sent', await dialog.getByText('Thank you, Tobi.').isVisible())
+  check('the consultation fee is stated before paying', await dialog.getByText(/The fee is \$25/).isVisible())
+  await dialog.getByRole('button', { name: /Continue to payment, \$25/ }).click()
+  await dialog.getByText('Thank you, Tobi.').waitFor()
+  check('consultation is booked', await dialog.getByText(/Your consultation is booked/).isVisible())
   await dialog.getByRole('button', { name: 'Done' }).click()
 
   // A signed-out visitor cannot reach the dashboard.
@@ -123,6 +125,21 @@ for (const [label, w, h] of [['desktop', 1440, 900], ['phone', 390, 844]]) {
   await page.waitForTimeout(600)
   check('Module 2 opens straight away', await page.getByRole('button', { name: /Play lesson 1/ }).isVisible())
 
+  // Module 3 is paid: it shows its price, and opens once bought (preview: no charge).
+  await page.goto(BASE + '/learn/m03-ec2/', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  check('Module 3 is locked behind a $20 unlock', (await page.getByRole('button', { name: 'Unlock for $20' }).isVisible()) && !(await page.getByRole('button', { name: /Play lesson 1/ }).count()))
+  await shot('06a-module3-paywall')
+  const media = []
+  page.on('response', (r) => r.url().includes('/media/audio/') && media.push(r.status()))
+  await page.getByRole('button', { name: 'Unlock for $20' }).click()
+  await page.getByRole('button', { name: /Play lesson 1/ }).waitFor()
+  check('Module 3 opens after buying', await page.getByRole('button', { name: /Play lesson 1/ }).isVisible())
+  await page.getByRole('button', { name: /Play lesson 1/ }).click()
+  await page.waitForFunction(() => (document.querySelector('audio')?.currentTime ?? 0) > 0.5, null, { timeout: 15000 }).catch(() => {})
+  const t3 = await page.evaluate(() => document.querySelector('audio')?.currentTime ?? 0)
+  check('its narration plays, fetched through the server', t3 > 0.5 && media.length >= 2 && media.every((s) => s === 200), `${t3.toFixed(1)}s, ${media.join(',')}`)
+
   // Module 5 asks how to continue, with no prices.
   await page.goto(BASE + '/learn/m05-vpc/', { waitUntil: 'networkidle' })
   await page.waitForTimeout(600)
@@ -135,10 +152,13 @@ for (const [label, w, h] of [['desktop', 1440, 900], ['phone', 390, 844]]) {
   }, allLessons)
   await page.goto(BASE + '/learn/m03-ec2/', { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
-  check('end of Module 3 leads on to Module 4', await page.getByRole('link', { name: /Start Module 4/ }).isVisible())
+  check('end of Module 3 leads on to Module 4', await page.getByRole('link', { name: /Continue to Module 4/ }).isVisible())
   await page.goto(BASE + '/learn/m04-s3/', { waitUntil: 'networkidle' })
   await page.waitForTimeout(600)
-  check('Module 4 (S3) is free and ready to play', await page.getByRole('button', { name: /Play lesson|Watch again|Continue/ }).first().isVisible())
+  check('Module 4 (S3) is locked behind a $20 unlock', await page.getByRole('button', { name: 'Unlock for $20' }).isVisible())
+  await page.getByRole('button', { name: 'Unlock for $20' }).click()
+  await page.getByRole('button', { name: /Play lesson|Watch again|Continue/ }).first().waitFor()
+  check('Module 4 opens after buying', await page.getByRole('button', { name: /Play lesson|Watch again|Continue/ }).first().isVisible())
 
   await page.goto(BASE + '/dashboard/', { waitUntil: 'networkidle' })
   await page.waitForTimeout(900)
@@ -148,8 +168,12 @@ for (const [label, w, h] of [['desktop', 1440, 900], ['phone', 390, 844]]) {
   // Instructor-led lists all four courses.
   await page.goto(BASE + '/classes/', { waitUntil: 'networkidle' })
   await page.waitForTimeout(600)
-  check('instructor-led page lists four courses', (await page.getByRole('button', { name: /live (AWS )?classes$/ }).count()) === 4)
-  check('three domains list their live classes', (await page.getByText('Live class 1', { exact: true }).count()) === 3)
+  check('instructor-led page lists four programmes', (await page.getByRole('button', { name: 'Enrol', exact: true }).count()) === 4)
+  check('AWS shows the Introduction and its 14 modules', (await page.locator('article[data-course="aws"] ol li').count()) === 15)
+  check('DevOps shows its 7 modules', (await page.locator('article[data-course="devops"] ol li').count()) === 7)
+  check('Healthcare Data shows its four months and capstone', (await page.locator('article[data-course="data-ai"] h4').count()) === 5 && (await page.locator('article[data-course="data-ai"] ol li').count()) === 26)
+  check('no recorded classes are listed', (await page.getByText(/Live class \d|recording/i).count()) === 0)
+  check('the consultation fee is explained', (await page.getByText(/book a one-to-one consultation for \$25/i).count()) === 4)
   await shot('08-instructor-led')
 
   if (label === 'phone') {

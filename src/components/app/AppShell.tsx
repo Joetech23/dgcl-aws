@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-[100dvh] bg-slate lg:flex">
       {/* ---------- desktop sidebar ---------- */}
       <aside className="sticky top-0 hidden h-[100dvh] w-[248px] shrink-0 flex-col border-r border-line bg-surface px-4 pb-5 pt-6 lg:flex">
-        <Link href="/" aria-label="FreeTechPath home" className="px-2">
+        <Link href="/" aria-label="Learn Tech Hub home" className="px-2">
           <Brand className="h-10" />
         </Link>
         <p className="mt-8 px-3 font-display text-[11px] font-bold uppercase tracking-[0.14em] text-ink/35">Learn</p>

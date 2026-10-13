@@ -16,6 +16,8 @@ export type EnquiryEmailInput = {
   course: string
   message?: string | null
   referralCode?: string | null
+  /** Instructor-led: the learner has been sent to pay the consultation fee. */
+  awaitingPayment?: boolean
 }
 
 const NAVY = '#000066'
@@ -100,6 +102,7 @@ export function salesAlert(e: EnquiryEmailInput, siteUrl: string) {
       ${row('Way to learn', esc(trackName(e.track)))}
       ${row('About', esc(e.course))}
       ${e.referralCode ? row('Partner code', esc(e.referralCode)) : ''}
+      ${e.awaitingPayment ? row('Consultation fee', 'Not paid yet. You will get a second email when it is.') : ''}
       ${e.message ? row('Message', esc(e.message)) : ''}
     </table>
     <table role="presentation" cellpadding="0" cellspacing="0"><tr>
@@ -118,7 +121,7 @@ export function enquiryReceipt(e: EnquiryEmailInput, siteUrl: string) {
   const body = `
     ${p(`Hi ${esc(first)}, thank you for asking about <strong style="color:${INK};">${esc(e.course)}</strong> (${esc(trackName(e.track).toLowerCase())}).`)}
     ${p('A DGCL adviser will call or email you, usually within one working day, with the options and the price for your country.')}
-    ${p('While you wait, the Introduction and Modules 1 to 4 of AWS Cloud Training are free to take.')}
+    ${p('While you wait, the Introduction and the first two modules of AWS Cloud Training are free to take.')}
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:6px;"><tr>
       <td style="background:${BLUE};border-radius:10px;"><a href="${esc(siteUrl)}/dashboard/" style="display:inline-block;padding:12px 18px;font-family:${FONT};font-size:14px;font-weight:bold;color:#FFFFFF;text-decoration:none;">Start learning free</a></td>
     </tr></table>
@@ -126,5 +129,52 @@ export function enquiryReceipt(e: EnquiryEmailInput, siteUrl: string) {
   return {
     subject: 'We have your enquiry: DGCL Digital Cloud Academy',
     html: layout(siteUrl, 'A DGCL adviser will contact you within one working day.', 'Thank you, we have your details', body),
+  }
+}
+
+/* ---------- consultation fee paid ---------- */
+
+export type ConsultationEmailInput = {
+  name: string
+  email: string
+  phone?: string | null
+  country?: string | null
+  course?: string | null
+  /** Whole US dollars. */
+  amount: number
+}
+
+/** To DGCL's team: this enquiry has paid the consultation fee, so arrange the meeting. */
+export function consultationPaidAlert(e: ConsultationEmailInput, siteUrl: string) {
+  const body = `
+    ${p(`${esc(e.name)} has paid the consultation fee. Please contact them to agree a time for the one-to-one meeting.`)}
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-top:1px solid #DEE4F0;border-bottom:1px solid #DEE4F0;margin:6px 0 18px;">
+      ${row('Paid', `$${esc(e.amount)} (US dollars)`)}
+      ${row('Name', esc(e.name))}
+      ${row('Email', `<a href="mailto:${esc(e.email)}" style="color:${BLUE};">${esc(e.email)}</a>`)}
+      ${e.phone ? row('Phone', esc(e.phone)) : ''}
+      ${e.country ? row('Country', esc(e.country)) : ''}
+      ${e.course ? row('About', esc(e.course)) : ''}
+    </table>
+    <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+      <td style="background:${BLUE};border-radius:10px;"><a href="${esc(siteUrl)}/admin/#enquiries" style="display:inline-block;padding:12px 18px;font-family:${FONT};font-size:14px;font-weight:bold;color:#FFFFFF;text-decoration:none;">Open in the admin panel</a></td>
+    </tr></table>`
+  return {
+    subject: `Consultation fee paid: ${e.name}${e.country ? ` (${e.country})` : ''}`,
+    html: layout(siteUrl, `${e.name} has paid the consultation fee.`, 'Consultation fee paid', body),
+  }
+}
+
+/** To the learner: payment received, and what happens next. */
+export function consultationReceipt(e: ConsultationEmailInput, siteUrl: string) {
+  const first = e.name.split(' ')[0]
+  const body = `
+    ${p(`Hi ${esc(first)}, we have received your consultation fee of <strong style="color:${INK};">$${esc(e.amount)}</strong>${e.course ? ` for <strong style="color:${INK};">${esc(e.course)}</strong>` : ''}. Thank you.`)}
+    ${p('A DGCL adviser will email or call you, usually within one working day, to agree a time for your one-to-one consultation.')}
+    ${p('If you go on to enrol, this fee comes off your training fee.')}
+    <p style="margin:18px 0 0;font-size:13px;line-height:1.6;color:${MUTED};">Have a question now? Just reply to this email.</p>`
+  return {
+    subject: 'Your consultation is booked: DGCL Digital Cloud Academy',
+    html: layout(siteUrl, 'We have received your consultation fee.', 'Your consultation is booked', body),
   }
 }

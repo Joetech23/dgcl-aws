@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { sendResetCode, useAccount } from '@/lib/backend'
 import {
+  grantModule,
   createPartner,
   issueCertificate,
   loadAdmin,
@@ -19,7 +20,8 @@ import {
 } from '@/lib/backend/admin'
 import { referralLink } from '@/lib/backend/referral'
 import { exportCSV, exportPDF, type Column } from '@/lib/export'
-import { catalog } from '@/config/catalog'
+import { catalog, PRICED_MODULES } from '@/config/catalog'
+import { money } from '@/config/pricing'
 import { tracks, type TrackId } from '@/config/tracks'
 import { moduleName } from '@/lib/course/names'
 import { Bars, Card, Chip, Columns, ExportButtons, Kpi, SearchBox, ago, fmtDate } from './ui'
@@ -165,6 +167,28 @@ function Overview({ data, go }: { data: AdminData; go: (t: Tab) => void }) {
         <Kpi label="New enquiries" value={statusCount('new')} hint="Waiting for a call" tone="rose" />
       </div>
 
+      <Card>
+        <h2 className="font-display text-[16px] font-extrabold text-ink">Paid online</h2>
+        <p className="mt-1 text-[13px] text-ink/50">Payments confirmed by Stripe, in US dollars. Stripe&apos;s own dashboard has the full record, fees and refunds.</p>
+        <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+          {[
+            ['Modules sold', String(data.sales.modules), money(data.sales.moduleRevenue)],
+            ['Consultations booked', String(data.sales.consultations), money(data.sales.consultationRevenue)],
+            ['Total', String(data.sales.modules + data.sales.consultations), money(data.sales.moduleRevenue + data.sales.consultationRevenue)],
+          ].map(([label, count, amount]) => (
+            <div key={label} className="rounded-2xl border border-line p-4">
+              <dt className="text-[12.5px] text-ink/55">{label}</dt>
+              <dd className="mt-1 flex items-baseline gap-2">
+                <span className="font-display text-[24px] font-extrabold leading-none text-ink">{amount}</span>
+                <span className="text-[12.5px] text-ink/50">
+                  {count} {count === '1' ? 'payment' : 'payments'}
+                </span>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </Card>
+
       <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
         <Card>
           <h2 className="font-display text-[16px] font-extrabold text-ink">New learners, last 14 days</h2>
@@ -238,6 +262,7 @@ const learnerColumns: Column<StudentRow>[] = [
   { label: 'Country', value: (r) => r.country },
   { label: 'Joined', value: (r) => fmtDate(r.joinedAt) },
   { label: 'Programme', value: (r) => (r.track ? tracks.find((t) => t.id === r.track)?.name : 'Free') },
+  { label: 'Modules bought', value: (r) => PRICED_MODULES.filter((m) => r.purchased?.includes(m.slug)).map((m) => moduleName(m.number)).join(', ') },
   { label: 'Progress %', value: (r) => Math.round(r.progress * 100) },
   { label: 'Modules done', value: (r) => r.modulesDone },
   { label: 'Last active', value: (r) => fmtDate(r.lastActive) },
@@ -376,6 +401,30 @@ function Learners({ data, reload }: { data: AdminData; reload: () => void }) {
                       </option>
                     ))}
                   </select>
+                  {!s.track ? (
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {PRICED_MODULES.map((m) =>
+                        s.purchased?.includes(m.slug) ? (
+                          <span key={m.slug} title={`${moduleName(m.number)} is open for this learner`} className="inline-flex h-6 items-center gap-1 rounded-full bg-mint/15 px-2 font-display text-[11px] font-bold text-[#077A55] dark:text-mint">
+                            <IconCheck size={11} /> M{m.number}
+                          </span>
+                        ) : (
+                          <button
+                            key={m.slug}
+                            type="button"
+                            disabled={busy === s.id || !!s.sample}
+                            title={`Open ${moduleName(m.number)} without online payment`}
+                            onClick={() => {
+                              if (confirm(`Open ${moduleName(m.number)} for ${s.name} without an online payment?`)) void run(s.id, () => grantModule(s.id, m.slug))
+                            }}
+                            className="inline-flex h-6 items-center rounded-full border border-line px-2 font-display text-[11px] font-bold text-ink/55 hover:border-blue/40 hover:text-blue disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            + M{m.number}
+                          </button>
+                        ),
+                      )}
+                    </div>
+                  ) : null}
                 </td>
                 <td className="px-3 py-3 font-mono text-[12.5px] text-ink/70">{s.referralCode ?? ''}</td>
                 <td className="px-5 py-3 text-right">
@@ -434,6 +483,7 @@ const leadColumns: Column<LeadRow>[] = [
   { label: 'About', value: (r) => r.course },
   { label: 'Partner code', value: (r) => r.referralCode },
   { label: 'Status', value: (r) => STATUS_LABEL[r.status] },
+  { label: 'Consultation fee', value: (r) => (r.track === 'instructor-led' ? (r.consultationPaid ? 'Paid' : 'Not paid') : '') },
   { label: 'Message', value: (r) => r.message },
   { label: 'Notes', value: (r) => r.notes },
 ]
@@ -507,6 +557,15 @@ function Enquiries({ data, reload }: { data: AdminData; reload: () => void }) {
             <p className="mt-3 text-[13.5px] text-ink/75">
               <strong className="font-semibold text-ink">{l.track === 'instructor-led' ? 'Instructor-led' : 'Self-paced'}</strong> · {l.course}
               {l.referralCode ? <span className="ml-1.5 rounded bg-blue/10 px-1.5 py-0.5 font-mono text-[11.5px] text-blue">{l.referralCode}</span> : null}
+              {l.track === 'instructor-led' && !l.sample ? (
+                l.consultationPaid ? (
+                  <span className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-mint/15 px-2 py-0.5 font-display text-[11.5px] font-bold text-[#077A55] dark:text-mint">
+                    <IconCheck size={11} /> Consultation fee paid
+                  </span>
+                ) : (
+                  <span className="ml-1.5 rounded-full bg-gold/20 px-2 py-0.5 font-display text-[11.5px] font-bold text-[#7A5A00] dark:text-gold">Fee not paid</span>
+                )
+              ) : null}
             </p>
             {l.message ? <p className="mt-2 rounded-xl bg-slate px-3 py-2 text-[13px] text-ink/70">{l.message}</p> : null}
             <div className="mt-3 flex flex-wrap gap-2">

@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { useAccount } from '@/lib/backend'
-import { catalog, LAST_FREE, TOTAL_MODULES } from '@/config/catalog'
+import { catalog, PROGRAMME_MODULES_TEXT, TOTAL_MODULES } from '@/config/catalog'
+import { money } from '@/config/pricing'
 import { courses } from '@/config/courses'
 import { findTrack } from '@/config/tracks'
 import { moduleName } from '@/lib/course/names'
@@ -24,10 +25,10 @@ export default function Dashboard() {
   const a = useAccount()
   if (!a.user) return null
 
-  const { completed, enrollment } = a
+  const { completed, enrollment, purchased } = a
   const track = findTrack(enrollment?.track)
-  const up = nextModule(completed, enrollment)
-  const upState = up ? moduleState(up, completed, enrollment) : null
+  const up = nextModule(completed, enrollment, purchased)
+  const upState = up ? moduleState(up, completed, enrollment, purchased) : null
   const nextSlideIndex = up?.lesson ? Math.max(0, up.lesson.slides.findIndex((s) => !completed.has(s.id))) : 0
   const nextSlide = up?.lesson?.slides[nextSlideIndex] ?? null
 
@@ -76,12 +77,29 @@ export default function Dashboard() {
                 </div>
               </div>
             </section>
+          ) : upState === 'needs-purchase' && up ? (
+            <section data-tour="continue" className="relative overflow-hidden rounded-3xl bg-blue-deep p-6 text-white sm:p-8">
+              <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full border-[34px] border-gold/20" />
+              <p className="relative font-display text-[12px] font-bold uppercase tracking-[0.14em] text-gold">Next module</p>
+              <h2 className="relative mt-2 max-w-lg font-display text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+                {moduleName(up.number)}: {up.title}
+              </h2>
+              <p className="relative mt-2 max-w-lg text-[15px] text-white/70">
+                {up.blurb} Unlock it for {money(up.price ?? 0)}, one payment, and it stays open on your account.
+              </p>
+              <div className="relative mt-6 flex flex-col gap-2 sm:flex-row">
+                <Link href={`/learn/${up.slug}/`} className={buttonClass('gold', 'lg')}>
+                  Unlock for {money(up.price ?? 0)}
+                  <IconArrowRight size={18} />
+                </Link>
+              </div>
+            </section>
           ) : !enrollment && freeTrackDone(completed) ? (
             <section data-tour="continue" className="relative overflow-hidden rounded-3xl bg-blue-deep p-6 text-white sm:p-8">
               <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full border-[34px] border-gold/20" />
-              <p className="relative font-display text-[12px] font-bold uppercase tracking-[0.14em] text-gold">Free modules complete</p>
+              <p className="relative font-display text-[12px] font-bold uppercase tracking-[0.14em] text-gold">Every open lesson is done</p>
               <h2 className="relative mt-2 max-w-lg font-display text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
-                Great work. Ready for Modules 5 to {TOTAL_MODULES}?
+                Great work. Ready for {PROGRAMME_MODULES_TEXT}?
               </h2>
               <p className="relative mt-2 max-w-lg text-[15px] text-white/70">
                 Networking, databases, serverless, security and more. Learn at your own pace, or live with an instructor. Our team will find the right price for your country.
@@ -123,16 +141,16 @@ export default function Dashboard() {
           {/* ---------- modules ---------- */}
           <section>
             <div className="flex items-baseline justify-between">
-              <h2 className="font-display text-[18px] font-extrabold text-ink">Your free modules</h2>
+              <h2 className="font-display text-[18px] font-extrabold text-ink">Your modules</h2>
               <Link href="/learn/" className="font-display text-[13.5px] font-bold text-blue hover:underline">
                 All {TOTAL_MODULES} modules
               </Link>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
               {catalog
-                .filter((m) => m.number <= LAST_FREE)
+                .filter((m) => m.lesson)
                 .map((m) => (
-                  <ModuleCard key={m.slug} m={m} state={moduleState(m, completed, enrollment)} fraction={moduleFraction(m, completed)} />
+                  <ModuleCard key={m.slug} m={m} state={moduleState(m, completed, enrollment, purchased)} fraction={moduleFraction(m, completed)} />
                 ))}
             </div>
           </section>
@@ -153,7 +171,7 @@ export default function Dashboard() {
 
           <section className="rounded-3xl bg-surface p-5 shadow-[0_1px_0_rgb(var(--line))]">
             <h2 className="font-display text-[17px] font-extrabold text-ink">Instructor-led classes</h2>
-            <p className="mt-1.5 text-[14px] leading-relaxed text-ink/60">Live classes with a DGCL instructor, with recordings added each week.</p>
+            <p className="mt-1.5 text-[14px] leading-relaxed text-ink/60">Live online training with a DGCL instructor. It starts with a one-to-one consultation.</p>
             <ul className="mt-4 space-y-2">
               {courses.map((c) => (
                 <li key={c.id} className="flex items-center gap-3">
@@ -165,7 +183,7 @@ export default function Dashboard() {
               ))}
             </ul>
             <ButtonLink href="/classes/" variant="secondary" size="md" className="mt-4 w-full">
-              See the classes
+              See the programmes
             </ButtonLink>
           </section>
 

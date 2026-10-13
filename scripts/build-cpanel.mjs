@@ -13,7 +13,7 @@
  * into the build, so build with the production values in place.
  */
 import { execSync } from 'node:child_process'
-import { cp, mkdir, rm, writeFile, readFile, stat } from 'node:fs/promises'
+import { cp, mkdir, rm, writeFile, readFile, readdir, rename, stat } from 'node:fs/promises'
 import { createWriteStream, existsSync } from 'node:fs'
 import path from 'node:path'
 import archiver from 'archiver'
@@ -43,6 +43,28 @@ console.log('> adding static files and public/')
 await cp(path.join(DIST, 'static'), path.join(STANDALONE, '.next-cpanel', 'static'), { recursive: true })
 await cp(path.join(ROOT, 'public'), path.join(STANDALONE, 'public'), { recursive: true })
 
+// Paid modules' narration must not be a public file. Their slide ids start
+// with the letters listed in src/config/pricing.ts; those files move to
+// private/audio, where only src/app/media can read them (after checking the
+// learner has paid). Everything else in public/ stays public.
+const pricing = await readFile(path.join(ROOT, 'src', 'config', 'pricing.ts'), 'utf8')
+const paidPrefixes = [...pricing.matchAll(/audioPrefix:\s*'([a-z])'/g)].map((m) => m[1])
+if (!paidPrefixes.length) throw new Error('No paid audio prefixes found in src/config/pricing.ts')
+const publicAudio = path.join(STANDALONE, 'public', 'audio')
+const privateAudio = path.join(STANDALONE, 'private', 'audio')
+await rm(path.join(STANDALONE, 'private'), { recursive: true, force: true })
+await mkdir(privateAudio, { recursive: true })
+let moved = 0
+for (const file of await readdir(publicAudio)) {
+  if (paidPrefixes.includes(file[0])) {
+    await rename(path.join(publicAudio, file), path.join(privateAudio, file))
+    moved++
+  }
+}
+const leaked = (await readdir(publicAudio)).filter((f) => paidPrefixes.includes(f[0]))
+if (!moved || leaked.length) throw new Error(`Paid narration is still public: moved ${moved}, left ${leaked.length}`)
+console.log(`> ${moved} paid narration files moved out of public/ (prefixes: ${paidPrefixes.join(', ')})`)
+
 // The startup file, written into the zip's top level (see below). cPanel runs
 // apps through Passenger, which hands the app its own socket; Next only needs
 // a neutral host to bind to. Some hosts set HOSTNAME to the machine's name,
@@ -51,6 +73,13 @@ const APP_JS = `// Startup file for cPanel "Setup Node.js App". Do not rename or
 // The site itself lives in ./site, with its own node_modules. It must stay
 // there: CloudLinux manages a node_modules link in this top folder and
 // refuses to run an app that brings its own.
+// Next.js 16 does not run on Node older than 20.9. Say so plainly rather than
+// fail later with an error that does not name the cause.
+const [major, minor] = process.versions.node.split('.').map(Number)
+if (major < 20 || (major === 20 && minor < 9)) {
+  console.error('This site needs Node.js 20.9 or newer; this server is running ' + process.version + '. Change it in cPanel > Setup Node.js App.')
+  process.exit(1)
+}
 process.env.NODE_ENV = 'production'
 process.env.HOSTNAME = '0.0.0.0'
 require('./site/server.js')
@@ -85,4 +114,4 @@ await new Promise((resolve, reject) => {
 })
 
 const mb = ((await stat(ZIP)).size / 1e6).toFixed(1)
-console.log(`\n✓ dist${path.sep}dgcl-cpanel.zip  (${mb} MB)\n  Startup file: app.js   Node.js: 18.17 or newer (20 recommended)`)
+console.log(`\n✓ dist${path.sep}dgcl-cpanel.zip  (${mb} MB)\n  Startup file: app.js   Node.js: 20.9 or newer`)

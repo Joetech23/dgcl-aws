@@ -57,6 +57,7 @@ const K = {
   streak: 'dgcl-streak',
   leads: 'dgcl-leads',
   certs: 'dgcl-certs',
+  purchases: 'dgcl-purchases',
 }
 const EVENT = 'dgcl-account-change'
 
@@ -254,6 +255,7 @@ export async function signOut() {
   if (SUPABASE_ON) await sb().auth.signOut()
   write(K.user, null)
   write(K.enrol, null)
+  forgetLessonMedia()
   // The next learner on this device starts clean.
   getProgressStore().save(EMPTY)
   await refresh()
@@ -272,8 +274,17 @@ export async function updateProfile(patch: { name?: string; phone?: string; coun
 
 /* ================= enquiries ================= */
 
-export async function saveLead(input: LeadInput): Promise<{ ok: boolean; error?: string }> {
+export type LeadSaved = { ok: true; id: string } | { ok: false; error: string }
+
+/**
+ * Saves an enquiry. The id is made here, in the browser, because the public
+ * may add an enquiry but may never read one back; the id is what the payment
+ * step uses to say which enquiry a consultation fee belongs to.
+ */
+export async function saveLead(input: LeadInput): Promise<LeadSaved> {
+  const id = crypto.randomUUID()
   const row = {
+    id,
     name: input.name.trim(),
     email: input.email.trim().toLowerCase(),
     phone: input.phone.trim(),
@@ -287,19 +298,137 @@ export async function saveLead(input: LeadInput): Promise<{ ok: boolean; error?:
   if (SUPABASE_ON) {
     const { error } = await sb().from('leads').insert(row)
     if (error) return { ok: false, error: 'We could not send that. Please try again.' }
-    // The enquiry is saved. The emails (alert to DGCL, receipt to the learner)
-    // are a courtesy on top: never make the learner wait on them or see them fail.
-    void fetch('/api/enquiry/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...row, referralCode: row.referral_code }),
-      keepalive: true,
-    }).catch(() => {})
-    return { ok: true }
+    return { ok: true, id }
   }
   const leads = read<unknown[]>(K.leads) ?? []
-  write(K.leads, [{ id: `l_${Date.now()}`, status: 'new', notes: null, created_at: new Date().toISOString(), ...row }, ...leads])
-  return { ok: true }
+  write(K.leads, [{ status: 'new', notes: null, created_at: new Date().toISOString(), consultation_paid: false, ...row }, ...leads])
+  return { ok: true, id }
+}
+
+/**
+ * Emails for a saved enquiry: an alert to DGCL and, unless a consultation fee
+ * is still to be paid, a receipt to the learner. A courtesy on top of the
+ * saved enquiry: it never blocks the learner or shows them an error.
+ */
+export function notifyLead(input: LeadInput, awaitingPayment = false) {
+  if (!SUPABASE_ON) return
+  void fetch('/api/enquiry/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...input, referralCode: normaliseCode(input.referralCode ?? '') || null, awaitingPayment }),
+    keepalive: true,
+  }).catch(() => {})
+}
+
+/* ================= payments ================= */
+
+/** The signed-in learner's token, for calls to this site's own server routes. */
+export async function authHeader(): Promise<Record<string, string>> {
+  if (!SUPABASE_ON) return {}
+  const { data } = await sb().auth.getSession()
+  return data.session ? { Authorization: `Bearer ${data.session.access_token}` } : {}
+}
+
+export type PayResult =
+  /** Go to this Stripe page. */
+  | { ok: true; url: string }
+  /** Nothing to pay: already bought, or (preview mode) recorded without payment. */
+  | { ok: true; url: null }
+  | { ok: false; error: string; notConfigured?: boolean }
+
+const PAY_ERRORS: Record<string, string> = {
+  'sign-in': 'Please log in again, then try once more.',
+  'unknown-module': 'That module cannot be bought online.',
+  'unknown-enquiry': 'We could not find your enquiry. Please send the form again.',
+  'payment-provider': 'The payment page could not be opened. Please try again in a moment.',
+}
+
+async function startCheckout(body: Record<string, string>): Promise<PayResult> {
+  try {
+    const res = await fetch('/api/checkout/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(await authHeader()) },
+      body: JSON.stringify(body),
+    })
+    const json = (await res.json().catch(() => ({}))) as { ok?: boolean; url?: string; owned?: boolean; error?: string }
+    if (res.ok && json.url) return { ok: true, url: json.url }
+    if (res.ok && json.owned) return { ok: true, url: null }
+    if (res.status === 503) return { ok: false, notConfigured: true, error: 'Online payment is not switched on yet. Please contact info@dgclgroup.com.' }
+    return { ok: false, error: PAY_ERRORS[json.error ?? ''] ?? 'Something went wrong starting the payment. Please try again.' }
+  } catch {
+    return { ok: false, error: 'You seem to be offline. Check your connection and try again.' }
+  }
+}
+
+/** Buy one module. In preview mode nothing is charged and the module simply opens. */
+export async function buyModule(slug: string): Promise<PayResult> {
+  if (!SUPABASE_ON) {
+    if (!state.user) return { ok: false, error: 'Please log in first.' }
+    const all = read<{ userId: string; slug: string }[]>(K.purchases) ?? []
+    write(K.purchases, [...all.filter((x) => !(x.userId === state.user!.id && x.slug === slug)), { userId: state.user.id, slug }])
+    await refresh()
+    return { ok: true, url: null }
+  }
+  const res = await startCheckout({ kind: 'module', slug })
+  if (res.ok && res.url === null) await refresh()
+  return res
+}
+
+/** Pay the consultation fee for a saved enquiry. Preview mode records it as paid. */
+export async function payConsultation(leadId: string): Promise<PayResult> {
+  if (!SUPABASE_ON) {
+    const leads = read<{ id: string; consultation_paid?: boolean }[]>(K.leads) ?? []
+    write(K.leads, leads.map((l) => (l.id === leadId ? { ...l, consultation_paid: true, paid_at: new Date().toISOString() } : l)))
+    return { ok: true, url: null }
+  }
+  return startCheckout({ kind: 'consultation', leadId })
+}
+
+export type Confirmed = { ok: true; kind: 'module'; slug: string } | { ok: true; kind: 'consultation' } | { ok: false; pending: boolean }
+
+/** After returning from Stripe: ask the server whether that payment went through. */
+export async function confirmCheckout(sessionId: string): Promise<Confirmed> {
+  if (!SUPABASE_ON) return { ok: false, pending: false }
+  try {
+    const res = await fetch('/api/checkout/confirm/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    })
+    const json = (await res.json().catch(() => ({}))) as { ok?: boolean; kind?: string; slug?: string; reason?: string }
+    if (json.ok && json.kind === 'module' && json.slug) {
+      await refresh()
+      return { ok: true, kind: 'module', slug: json.slug }
+    }
+    if (json.ok && json.kind === 'consultation') return { ok: true, kind: 'consultation' }
+    return { ok: false, pending: json.reason === 'unpaid' }
+  } catch {
+    return { ok: false, pending: true }
+  }
+}
+
+/* ---------- narration for paid modules ---------- */
+
+const mediaCache = new Map<string, string>()
+
+/** Forget downloaded narration, e.g. when someone logs out on a shared device. */
+export function forgetLessonMedia() {
+  mediaCache.forEach((url) => URL.revokeObjectURL(url))
+  mediaCache.clear()
+}
+
+/**
+ * Fetches a paid module's narration file with the learner's token and returns
+ * an address the audio player can use. Null means the server refused.
+ */
+export async function lessonMediaUrl(file: string): Promise<string | null> {
+  const hit = mediaCache.get(file)
+  if (hit) return hit
+  const res = await fetch(`/media/audio/${file}`, { headers: await authHeader(), cache: 'no-store' })
+  if (!res.ok) return null
+  const url = URL.createObjectURL(await res.blob())
+  mediaCache.set(file, url)
+  return url
 }
 
 export type PartnerOption = { code: string; name: string }
@@ -401,6 +530,8 @@ export type Account = {
   /** 10 per lesson finished. */
   points: number
   certificates: Certificate[]
+  /** Slugs of the modules this learner has bought. */
+  purchased: Set<string>
   isAdmin: boolean
   mode: 'supabase' | 'preview'
 }
@@ -414,6 +545,7 @@ const BLANK: Account = {
   streak: 0,
   points: 0,
   certificates: [],
+  purchased: new Set(),
   isAdmin: false,
   mode: SUPABASE_ON ? 'supabase' : 'preview',
 }
@@ -422,7 +554,7 @@ let state: Account = BLANK
 const listeners = new Set<(a: Account) => void>()
 let loading: Promise<void> | null = null
 
-function derive(user: User | null, enrollment: Enrollment | null, certificates: Certificate[]): Account {
+function derive(user: User | null, enrollment: Enrollment | null, certificates: Certificate[], purchased: string[] = []): Account {
   const progress = getProgressStore().load() ?? EMPTY
   const s = read<Streak>(K.streak)
   const alive = s && (s.lastDay === today() || s.lastDay === yesterday())
@@ -435,6 +567,7 @@ function derive(user: User | null, enrollment: Enrollment | null, certificates: 
     streak: alive ? s.days : 0,
     points: progress.completed.length * 10,
     certificates,
+    purchased: new Set(purchased),
     isAdmin: user?.role === 'admin',
     mode: SUPABASE_ON ? 'supabase' : 'preview',
   }
@@ -445,17 +578,20 @@ async function load(): Promise<Account> {
     const user = read<User>(K.user)
     const e = read<Enrollment>(K.enrol)
     const certs = (read<(Certificate & { userId: string })[]>(K.certs) ?? []).filter((c) => c.userId === user?.id)
-    return derive(user ? { ...user, role: user.role ?? 'student' } : null, user ? e : null, certs)
+    const bought = (read<{ userId: string; slug: string }[]>(K.purchases) ?? []).filter((x) => x.userId === user?.id).map((x) => x.slug)
+    return derive(user ? { ...user, role: user.role ?? 'student' } : null, user ? e : null, certs, bought)
   }
 
   const client = sb()
   const { data: auth } = await client.auth.getUser()
   if (!auth.user) return derive(null, null, [])
 
-  const [{ data: profile }, { data: remote }, { data: certs }] = await Promise.all([
+  // `bought` is simply empty until supabase/migrations/0004_payments.sql has been run.
+  const [{ data: profile }, { data: remote }, { data: certs }, { data: bought }] = await Promise.all([
     client.from('profiles').select('*').eq('id', auth.user.id).maybeSingle(),
     client.from('progress').select('*').eq('user_id', auth.user.id).maybeSingle(),
     client.from('certificates').select('*').eq('user_id', auth.user.id),
+    client.from('purchases').select('module_slug').eq('user_id', auth.user.id),
   ])
 
   // Merge: the union of lessons done here and lessons done on other devices.
@@ -483,7 +619,7 @@ async function load(): Promise<Account> {
     course: c.course,
     issuedAt: c.issued_at,
   }))
-  const account = derive(user, enrollment, certificates)
+  const account = derive(user, enrollment, certificates, ((bought as { module_slug: string }[] | null) ?? []).map((b) => b.module_slug))
   if (merged.length > ((remote?.completed as string[]) ?? []).length) void pushProgress()
   return account
 }
@@ -504,7 +640,7 @@ export async function refresh() {
 
 /** Re-derive from local data only (fast path after a lesson finishes). */
 function recompute() {
-  state = derive(state.user, state.enrollment, state.certificates)
+  state = derive(state.user, state.enrollment, state.certificates, Array.from(state.purchased))
   listeners.forEach((l) => l(state))
 }
 

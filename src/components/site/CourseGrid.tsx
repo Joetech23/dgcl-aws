@@ -1,11 +1,14 @@
 import Link from 'next/link'
+import { FREE_MODULES_TEXT } from '@/config/catalog'
 import { courses, type Course } from '@/config/courses'
+import { CONSULTATION_FEE_USD, money } from '@/config/pricing'
 import { IconArrowRight, IconVideo } from './icons'
+import { EnquireButton } from './Enquiry'
 
 /**
- * DGCL's four domains. The AWS course leads to the free start; the others
- * are taught in live instructor classes, so their cards show the classes
- * and lead to the Instructor-led page where the recordings are published.
+ * DGCL's four products. The AWS course leads to the free start of its
+ * self-paced lessons; every product is also taught by an instructor, which
+ * starts with a booked consultation.
  */
 export function CourseGrid() {
   return (
@@ -24,7 +27,10 @@ export function CourseGrid() {
           </div>
           <div className="flex flex-1 flex-col p-5">
             <h3 className="font-display text-[17px] font-extrabold leading-snug text-ink">{c.title}</h3>
-            <p className="mt-2 text-[14px] leading-relaxed text-ink/60">{c.summary}</p>
+            <p className="mt-2 text-[14px] leading-relaxed text-ink/60">
+              {c.summary}
+              {c.online ? ` The Introduction and ${FREE_MODULES_TEXT} are free.` : ''}
+            </p>
             <ul className="mt-4 flex flex-wrap gap-1.5">
               {c.topics.map((t) => (
                 <li key={t} className="rounded-md bg-slate px-2 py-1 text-[12px] font-semibold text-ink/65">
@@ -32,45 +38,25 @@ export function CourseGrid() {
                 </li>
               ))}
             </ul>
-            <p className="mt-4 flex items-center gap-1.5 text-[12.5px] text-ink/50">
-              <IconVideo size={14} className="shrink-0" />
-              {c.schedule}
+            <p className="mt-4 flex items-start gap-1.5 text-[12.5px] leading-snug text-ink/50">
+              <IconVideo size={14} className="mt-0.5 shrink-0" />
+              {c.online ? 'Self-paced online, or with an instructor' : `Instructor-led. Starts with a ${money(CONSULTATION_FEE_USD)} consultation`}
             </p>
-            {c.liveClasses.length ? <ClassDots course={c} /> : null}
             <div className="mt-auto pt-5">
               {c.online ? (
                 <Link href="/signup/" className="inline-flex items-center gap-1.5 font-display text-[14px] font-bold text-blue">
-                  Start Module 1 free <IconArrowRight size={16} />
+                  Start the Introduction free <IconArrowRight size={16} />
                 </Link>
               ) : (
-                <Link href="/classes/" className="inline-flex items-center gap-1.5 font-display text-[14px] font-bold text-ink/75 hover:text-blue">
-                  See the live classes <IconArrowRight size={16} />
-                </Link>
+                <EnquireButton track="instructor-led" course={c.title} className="inline-flex items-center gap-1.5 font-display text-[14px] font-bold text-ink/75 hover:text-blue">
+                  Book a consultation <IconArrowRight size={16} />
+                </EnquireButton>
               )}
             </div>
           </div>
         </article>
       ))}
     </div>
-  )
-}
-
-/** Class 1, 2, 3... as small numbered marks; filled once its recording is up. */
-function ClassDots({ course }: { course: Course }) {
-  return (
-    <ol aria-label={`${course.title}: live classes`} className="mt-2.5 flex flex-wrap items-center gap-1.5">
-      {course.liveClasses.map((k, i) => (
-        <li
-          key={k.title}
-          title={k.video ? `${k.title}: recording available` : `${k.title}: recording on the way`}
-          className="grid h-7 w-7 place-items-center rounded-full font-display text-[12px] font-extrabold"
-          style={k.video ? { background: course.tint, color: '#fff' } : { boxShadow: `inset 0 0 0 1.5px ${course.tint}66`, color: course.tint }}
-        >
-          {i + 1}
-        </li>
-      ))}
-      <li className="pl-1 text-[12px] text-ink/45">and more each week</li>
-    </ol>
   )
 }
 

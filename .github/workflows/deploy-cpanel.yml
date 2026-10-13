@@ -1,4 +1,5 @@
-# Deploys the site to cPanel (freelearning.dgclgroup.com) on every push to main.
+# Deploys the site to cPanel on every push to main. Which folder (and so which
+# subdomain) it lands in is decided by the FTP account in FTP_USERNAME.
 #
 # The site is built here, on GitHub's machines, because shared hosting does not
 # have the memory to run `next build`. The built files are then uploaded to the
@@ -33,6 +34,8 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || vars.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      # Optional: the public address, when it is not https://lth.dgclgroup.com.
+      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
       # Optional: the Google Search Console "HTML tag" code. Leave unset and no tag is added.
       NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: ${{ vars.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || secrets.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }}
       FTP_SERVER: ${{ secrets.FTP_SERVER || vars.FTP_SERVER }}

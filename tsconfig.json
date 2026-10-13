@@ -15,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -34,7 +34,10 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next-test/types/**/*.ts",
-    ".next-cpanel/types/**/*.ts"
+    ".next-cpanel/types/**/*.ts",
+    ".next-test/dev/types/**/*.ts",
+    ".next-cpanel/dev/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

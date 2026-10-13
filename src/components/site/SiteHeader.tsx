@@ -41,7 +41,7 @@ export function SiteHeader() {
       }`}
     >
       <Container className="flex h-16 items-center gap-6 lg:h-[72px]">
-        <Link href="/" aria-label="FreeTechPath by DGCL Digital Cloud Academy, home" className="shrink-0">
+        <Link href="/" aria-label="Learn Tech Hub by DGCL Digital Cloud Academy, home" className="shrink-0">
           <Brand className="h-9 lg:h-10" />
         </Link>
 

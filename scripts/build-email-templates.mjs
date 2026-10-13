@@ -21,7 +21,9 @@ const INK = '#0B1020'
 const MUTED = '#5B6478'
 const FONT = "-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
 
-function layout({ preheader, heading, intro, after }) {
+// No hidden preview text and no links: both make spam filters (Yahoo, Outlook)
+// more suspicious of a short email from a new sending domain.
+function layout({ heading, intro, after }) {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -31,7 +33,6 @@ function layout({ preheader, heading, intro, after }) {
 <title>${heading}</title>
 </head>
 <body style="margin:0;padding:0;background:#F4F6FB;">
-<span style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6FB;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -66,7 +67,7 @@ function layout({ preheader, heading, intro, after }) {
         <tr>
           <td style="padding:18px 28px;background:#F4F6FB;font-family:${FONT};font-size:12px;line-height:1.6;color:#8C99B4;">
             DGCL Digital Cloud Academy · Digital Group Consultancy Services Ltd, London<br>
-            UK registered training provider, UKPRN 10101893 · <a href="mailto:info@dgclgroup.com" style="color:#8C99B4;">info@dgclgroup.com</a>
+            UK registered training provider, UKPRN 10101893 · info@dgclgroup.com
           </td>
         </tr>
       </table>

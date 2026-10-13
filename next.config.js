@@ -13,6 +13,17 @@ const scorm = Boolean(process.env.SCORM_BUILD)
  * The web build ignores `page.scorm.tsx` because Next only treats files named
  * exactly `page`, `layout`, etc. as routes.
  */
+// Sent with every page and file. They tell the browser to refuse the common
+// tricks: showing the site inside another site's frame, guessing a file's
+// type, leaking full addresses to other sites, and using http once https is known.
+const securityHeaders = [
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
+]
+
 const nextConfig = {
   // 'js' is needed for Next's own built-in _document/_app/_error pages (there
   // are no .js files in src/app). It also keeps the list longer than one item:
@@ -33,5 +44,10 @@ const nextConfig = {
   // scripts/build-scorm.mjs, not by assetPrefix — next/font rejects a relative
   // assetPrefix ("must start with a leading slash or be an absolute URL").
   trailingSlash: true,
+  // Do not announce the framework and version to anyone who asks.
+  poweredByHeader: false,
+  // Not for the SCORM package: that is a folder of files inside an LMS, which
+  // sets its own headers (and must be allowed to frame the course).
+  ...(scorm ? {} : { headers: async () => [{ source: '/:path*', headers: securityHeaders }] }),
 }
 module.exports = nextConfig

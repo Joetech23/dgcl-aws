@@ -5,7 +5,7 @@ import { SITE } from '@/config/site'
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: `${SITE.name} by ${SITE.owner}`,
-    short_name: SITE.name,
+    short_name: SITE.wordmark,
     description: SITE.description,
     id: '/',
     start_url: '/dashboard/',

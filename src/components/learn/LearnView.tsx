@@ -4,7 +4,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { catalog, findModule } from '@/config/catalog'
-import { canLearn, freeTrackDone, moduleFraction, moduleState } from '@/lib/access'
+import { canLearn, freeTrackDone, isLocked, moduleFraction, moduleState } from '@/lib/access'
+import { confirmCheckout } from '@/lib/backend'
+import { money } from '@/config/pricing'
 import { getProgressStore } from '@/lib/progress'
 import { useRequireUser, Avatar, StreakPill } from '@/components/app/AppShell'
 import { LessonPlayer } from './LessonPlayer'
@@ -53,6 +55,24 @@ export function LearnView({ slug }: { slug: string }) {
     })
   }
 
+  // Back from Stripe: the address carries the payment's id. The server checks
+  // it with Stripe and opens the module; the id is then cleared from the address.
+  const [payment, setPayment] = useState<'checking' | 'paid' | 'pending' | null>(null)
+  useEffect(() => {
+    const session = new URLSearchParams(window.location.search).get('paid')
+    if (!session) return
+    setPayment('checking')
+    window.history.replaceState(null, '', window.location.pathname)
+    let tries = 0
+    const check = async () => {
+      const res = await confirmCheckout(session)
+      if (res.ok) return setPayment('paid')
+      if (res.pending && ++tries < 4) return void setTimeout(check, 2500)
+      setPayment('pending')
+    }
+    void check()
+  }, [])
+
   // Resume at the bookmark if it is in this module, else the first unfinished lesson.
   useEffect(() => {
     if (!a.ready || index !== null || !m.lesson) return
@@ -65,9 +85,9 @@ export function LearnView({ slug }: { slug: string }) {
 
   if (!a.ready || !a.user) return <div className="min-h-[100dvh] bg-slate" aria-busy="true" />
 
-  const state = moduleState(m, a.completed, a.enrollment)
+  const state = moduleState(m, a.completed, a.enrollment, a.purchased)
   const nextM = catalog.find((c) => c.number === m.number + 1) ?? null
-  const nextState = nextM ? moduleState(nextM, a.completed, a.enrollment) : null
+  const nextState = nextM ? moduleState(nextM, a.completed, a.enrollment, a.purchased) : null
   const done = moduleFraction(m, a.completed) === 1
   const i = index ?? 0
   const total = m.lesson?.slides.length ?? 0
@@ -77,7 +97,7 @@ export function LearnView({ slug }: { slug: string }) {
     setSheet(false)
   }
 
-  const outline = <CourseOutline current={m} index={i} completed={a.completed} enrollment={a.enrollment} onSelect={select} />
+  const outline = <CourseOutline current={m} index={i} completed={a.completed} enrollment={a.enrollment} purchased={a.purchased} onSelect={select} />
 
   return (
     <div className="min-h-[100dvh] bg-slate">
@@ -133,7 +153,22 @@ export function LearnView({ slug }: { slug: string }) {
         ) : null}
 
         <main className="min-w-0">
-          {m.lesson && canLearn(state) && index !== null ? (
+          {payment === 'paid' && canLearn(state) ? (
+            <p role="status" className="anim-rise mb-4 flex items-center gap-2.5 rounded-2xl bg-mint/10 px-4 py-3 font-display text-[14px] font-bold text-[#077A55] dark:text-mint">
+              <IconCheck size={18} /> Payment received. {moduleName(m.number)} is open on your account.
+            </p>
+          ) : null}
+          {payment === 'pending' && !canLearn(state) ? (
+            <p role="status" className="mb-4 rounded-2xl bg-gold/15 px-4 py-3 text-[14px] leading-relaxed text-[#7A5A00] dark:text-gold">
+              We are still waiting for your payment to reach us. If you completed it, refresh this page in a minute. If you were charged and the module stays locked, write to info@dgclgroup.com.
+            </p>
+          ) : null}
+          {payment === 'checking' && !canLearn(state) ? (
+            <div className="rounded-3xl bg-surface p-10 text-center shadow-[0_1px_0_rgb(var(--line))]" aria-busy="true">
+              <p className="font-display text-[19px] font-extrabold text-ink">Checking your payment</p>
+              <p className="mt-1.5 text-[14.5px] text-ink/60">This takes a moment.</p>
+            </div>
+          ) : m.lesson && canLearn(state) && index !== null ? (
             <>
               <div className="mb-3 flex items-end gap-3">
                 <div className="min-w-0 flex-1">
@@ -154,13 +189,15 @@ export function LearnView({ slug }: { slug: string }) {
                   <div className="flex-1">
                     <p className="font-display text-[17px] font-extrabold text-ink">{moduleName(m.number)} complete</p>
                     <p className="text-[14px] text-ink/60">
-                      {nextState === 'needs-programme'
-                        ? `You have finished the free modules. ${moduleName(nextM.number)}, ${nextM.short}, is next.`
-                        : `Next: ${moduleName(nextM.number)}, ${nextM.title}.`}
+                      {nextState === 'needs-purchase'
+                        ? `Next: ${moduleName(nextM.number)}, ${nextM.short}, for ${money(nextM.price ?? 0)}.`
+                        : nextState === 'needs-programme'
+                          ? `${moduleName(nextM.number)}, ${nextM.short}, is next. It opens with a programme.`
+                          : `Next: ${moduleName(nextM.number)}, ${nextM.title}.`}
                     </p>
                   </div>
-                  <ButtonLink href={`/learn/${nextM.slug}/`} variant={nextState === 'needs-programme' ? 'gold' : 'primary'} size="lg">
-                    {nextState === 'needs-programme' ? `Continue to ${moduleName(nextM.number)}` : `Start ${moduleName(nextM.number)}`}
+                  <ButtonLink href={`/learn/${nextM.slug}/`} variant={nextState && isLocked(nextState) ? 'gold' : 'primary'} size="lg">
+                    {nextState && isLocked(nextState) ? `Continue to ${moduleName(nextM.number)}` : `Start ${moduleName(nextM.number)}`}
                     <IconArrowRight size={18} />
                   </ButtonLink>
                 </section>
@@ -180,8 +217,8 @@ export function LearnView({ slug }: { slug: string }) {
 
               <UpNext slides={m.lesson.slides} index={i} completed={a.completed} onSelect={select} />
             </>
-          ) : state === 'needs-programme' ? (
-            <Paywall m={m} celebrate={freeTrackDone(a.completed)} />
+          ) : isLocked(state) ? (
+            <Paywall m={m} celebrate={state === 'needs-programme' && freeTrackDone(a.completed) && m.number === 5} />
           ) : state === 'in-production' ? (
             <Notice
               icon={<IconBook size={26} />}

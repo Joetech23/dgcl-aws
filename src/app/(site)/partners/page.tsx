@@ -48,7 +48,7 @@ export default function PartnersPage() {
               <IconUser size={26} className="text-blue" />
               <h3 className="mt-3 font-display text-[18px] font-extrabold text-ink">What your learners get</h3>
               <ul className="mt-4 space-y-2.5">
-                {['The Introduction and Modules 1 to 4 free', 'A personal call to find the right programme and price', 'Training from a UK registered provider'].map((t) => (
+                {['The Introduction and first two modules free', 'A personal call to find the right programme and price', 'Training from a UK registered provider'].map((t) => (
                   <li key={t} className="flex gap-2.5 text-[15px] text-ink/75">
                     <IconCheck size={18} className="mt-0.5 shrink-0 text-mint" />
                     {t}

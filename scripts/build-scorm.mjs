@@ -92,6 +92,12 @@ async function makeRelative(dir) {
     }
     after = after.replaceAll('="/favicon', `="${prefix}favicon`)
 
+    // One "/_next/" must stay as it was. Before it starts, Next 16 looks for
+    // that text in the full address of its own running script, and an address
+    // never contains "./_next/". With it rewritten the course stops at the
+    // Start screen: the page shows, but nothing on it responds.
+    if (ext === '.js') after = after.replace(/\.indexOf\((["'])\.\/_next\/\1\)/g, '.indexOf($1/_next/$1)')
+
     if (after !== before) await writeFile(file, after, 'utf8')
   }
 }

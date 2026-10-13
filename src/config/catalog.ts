@@ -1,13 +1,15 @@
 import { modules as builtModules } from '@/content/modules'
 import type { CourseModule } from '@/lib/course/types'
+import { PAID_MODULES, money } from './pricing'
 
 /**
  * The whole AWS programme, as DGCL sells it.
  *
  * Titles follow DGCL's own programme table of contents (Introduction, slide 2):
- * an Introduction, then Modules 1 to 14. The Introduction and Modules 1 to 4
- * are free. Modules 5 to 14 open when a learner joins the self-paced or
- * instructor-led programme (see tracks.ts); DGCL's sales team sets that.
+ * an Introduction, then Modules 1 to 14. The Introduction and Modules 1 and 2
+ * are free. Modules 3 and 4 are bought one at a time (prices in pricing.ts).
+ * Modules 5 to 14 open when a learner joins the self-paced or instructor-led
+ * programme (see tracks.ts); DGCL's sales team sets that.
  *
  * Edit copy here. Nothing else needs to change when a module is added: when
  * its slides exist in src/content/modules.ts, `lesson` fills in by id.
@@ -26,11 +28,13 @@ export type CatalogModule = {
   /** Rough learning time including activities. */
   minutes: number
   free: boolean
+  /** Whole US dollars, when the module can be bought on its own. */
+  price: number | null
   /** The animated lesson, when it has been produced. */
   lesson: CourseModule | null
 }
 
-type Entry = Omit<CatalogModule, 'lesson'>
+type Entry = Omit<CatalogModule, 'lesson' | 'price'>
 
 const entries: Entry[] = [
   {
@@ -71,7 +75,7 @@ const entries: Entry[] = [
     blurb: 'Virtual servers: choosing, paying for, securing and storing.',
     outcomes: ['Pick the right instance and price', 'Lock one down with security groups', 'Choose the right storage'],
     minutes: 30,
-    free: true,
+    free: false,
   },
   {
     number: 4,
@@ -81,7 +85,7 @@ const entries: Entry[] = [
     blurb: 'Store anything, at any scale, for the right price.',
     outcomes: ['Create and secure S3 buckets', 'Pick a storage class', 'Host a static website'],
     minutes: 35,
-    free: true,
+    free: false,
   },
   {
     number: 5,
@@ -187,13 +191,33 @@ const entries: Entry[] = [
 
 const bySlug = new Map(builtModules.map((m) => [m.id, m]))
 
-export const catalog: CatalogModule[] = entries.map((e) => ({ ...e, lesson: bySlug.get(e.slug) ?? null }))
+export const catalog: CatalogModule[] = entries.map((e) => ({
+  ...e,
+  price: !e.free && PAID_MODULES[e.slug] ? PAID_MODULES[e.slug].usd : null,
+  lesson: bySlug.get(e.slug) ?? null,
+}))
 
 /** Numbered modules that are free (the Introduction is extra). */
 export const FREE_COUNT = catalog.filter((m) => m.free && m.number > 0).length
 /** Numbered modules, not counting the Introduction. */
 export const TOTAL_MODULES = catalog.filter((m) => m.number > 0).length
 export const LAST_FREE = Math.max(...catalog.filter((m) => m.free).map((m) => m.number))
+
+/** [1, 2] -> "Modules 1 and 2"; [5, 6, 7] -> "Modules 5 to 7". */
+function span(numbers: number[]) {
+  if (!numbers.length) return ''
+  if (numbers.length === 1) return `Module ${numbers[0]}`
+  const [first, last] = [numbers[0], numbers[numbers.length - 1]]
+  return numbers.length === 2 ? `Modules ${first} and ${last}` : `Modules ${first} to ${last}`
+}
+const numbered = catalog.filter((m) => m.number > 0)
+
+/** Words for the copy, so no page hard-codes which modules are free or paid. */
+export const FREE_MODULES_TEXT = span(numbered.filter((m) => m.free).map((m) => m.number))
+export const PRICED_MODULES = numbered.filter((m) => m.price !== null)
+export const PRICED_MODULES_TEXT = span(PRICED_MODULES.map((m) => m.number))
+export const MODULE_PRICE_TEXT = PRICED_MODULES.length ? money(PRICED_MODULES[0].price!) : ''
+export const PROGRAMME_MODULES_TEXT = span(numbered.filter((m) => !m.free && m.price === null).map((m) => m.number))
 
 export function findModule(slug: string) {
   return catalog.find((m) => m.slug === slug) ?? null

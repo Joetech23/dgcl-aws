@@ -1,5 +1,5 @@
 /**
- * Checks the FreeTechPath branding, the SEO files, the app manifest, the
+ * Checks the Learn Tech Hub branding, the SEO files, the app manifest, the
  * live class lists and the long-name layout on a phone.
  *
  *   node scripts/check-brand-seo.mjs        (preview test server on :3016)
@@ -31,7 +31,7 @@ check('sitemap lists the public pages', sitemap.status === 200 && ['/course/', '
 check('sitemap has no signed-in pages', !/dashboard|admin|account/.test(sitemap.body))
 const manifest = await text('/manifest.webmanifest')
 const m = manifest.status === 200 ? JSON.parse(manifest.body) : {}
-check('manifest is installable', m.short_name === 'FreeTechPath' && m.display === 'standalone' && m.icons?.some((i) => i.sizes === '512x512') && m.icons?.some((i) => i.purpose === 'maskable'))
+check('manifest is installable', m.short_name === 'LearnTechHub' && m.display === 'standalone' && m.icons?.some((i) => i.sizes === '512x512') && m.icons?.some((i) => i.purpose === 'maskable'))
 for (const f of ['/pwa/icon-192.png', '/pwa/icon-512.png', '/pwa/maskable-512.png', '/pwa/apple-touch-icon.png', '/og.png', '/sw.js', '/offline.html']) {
   check(`${f} is served`, (await fetch(BASE + f)).status === 200)
 }
@@ -49,7 +49,7 @@ const guard = async (ctx) =>
   await guard(ctx)
   const page = await ctx.newPage()
   await page.goto(BASE + '/')
-  check('title says FreeTechPath', (await page.title()).startsWith('FreeTechPath'), await page.title())
+  check('title says Learn Tech Hub', (await page.title()).startsWith('Learn Tech Hub'), await page.title())
   check('canonical link is set', (await page.locator('link[rel="canonical"]').getAttribute('href'))?.endsWith('/'))
   check('share image is set', (await page.locator('meta[property="og:image"]').getAttribute('content'))?.endsWith('/og.png'))
   check('manifest is linked', (await page.locator('link[rel="manifest"]').count()) === 1)
@@ -61,7 +61,7 @@ const guard = async (ctx) =>
     ['AWS Cloud', 'DevOps Tools', 'Cybersecurity and Ethical Hacking', 'Healthcare Data Analysis, AI and Machine'].every((d) => hero.includes(d)),
   )
   check('"next cohort" is gone from the landing page', (await page.getByText(/next cohort/i).count()) === 0)
-  check('three domains show numbered live classes', (await page.locator('ol[aria-label$="live classes"]').count()) === 3)
+  check('three programmes offer a consultation', (await page.locator('#courses').getByRole('button', { name: 'Book a consultation' }).count()) === 3)
   check('no long dashes on the landing page', !/[–—]/.test(await page.locator('body').innerText()))
 
   // The mark: both faces exist, and over one loop each is visible at some point.
@@ -75,13 +75,13 @@ const guard = async (ctx) =>
     seen.ftp = Math.max(seen.ftp, o.ftp)
     if (i === 0) await page.locator('header').screenshot({ path: `${SHOTS}/header-dgcl.png` })
     if (o.ftp > 0.99 && !seen.shot) {
-      await page.locator('header').screenshot({ path: `${SHOTS}/header-freetechpath.png` })
+      await page.locator('header').screenshot({ path: `${SHOTS}/header-learntechhub.png` })
       seen.shot = true
     }
     await page.waitForTimeout(450)
   }
   check('the mark shows the DGCL logo', seen.dgcl > 0.99)
-  check('the mark swaps to FreeTechPath', seen.ftp > 0.99)
+  check('the mark swaps to LearnTechHub', seen.ftp > 0.99)
   const w1 = await page.locator('header .brand-swap').evaluate((e) => e.getBoundingClientRect().width)
   await page.waitForTimeout(5000)
   const w2 = await page.locator('header .brand-swap').evaluate((e) => e.getBoundingClientRect().width)
@@ -136,7 +136,7 @@ const guard = async (ctx) =>
   await page.goto(BASE + '/classes/')
   await page.waitForTimeout(500)
   check('phone classes page has no sideways scroll', (await overflow()) <= 0, `${await overflow()}px`)
-  check('classes page lists live classes 1 to 4 for three domains', (await page.getByText('Live class 4', { exact: true }).count()) === 3)
+  check('classes page lists four programmes to enrol on', (await page.getByRole('button', { name: 'Enrol', exact: true }).count()) === 4)
   check('"next cohort" is gone from the classes page', (await page.getByText(/next cohort/i).count()) === 0)
   await page.screenshot({ path: `${SHOTS}/classes-phone.png`, fullPage: true })
   await ctx.close()

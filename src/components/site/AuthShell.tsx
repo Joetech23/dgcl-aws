@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { catalog } from '@/config/catalog'
+import { catalog, FREE_MODULES_TEXT } from '@/config/catalog'
 import { Brand } from './ui'
 import { IconCheck } from './icons'
 
@@ -14,7 +14,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-[100dvh] bg-surface lg:grid-cols-[1fr_0.9fr]">
       <div className="flex flex-col px-5 pb-10 pt-5 sm:px-10">
-        <Link href="/" aria-label="FreeTechPath by DGCL Digital Cloud Academy, home" className="self-start">
+        <Link href="/" aria-label="Learn Tech Hub by DGCL Digital Cloud Academy, home" className="self-start">
           <Brand className="h-10" />
         </Link>
         <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center py-10">{children}</div>
@@ -25,7 +25,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
         <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 rounded-full border-[40px] border-gold/15" />
         <div className="relative max-w-md">
           <p className="font-display text-[13px] font-bold uppercase tracking-[0.14em] text-gold">Free with your account</p>
-          <h2 className="mt-3 font-display text-[34px] font-extrabold leading-[1.1] tracking-[-0.025em]">The Introduction and four modules, free</h2>
+          <h2 className="mt-3 font-display text-[34px] font-extrabold leading-[1.1] tracking-[-0.025em]">The Introduction and {FREE_MODULES_TEXT}, free</h2>
           <ul className="mt-8 space-y-3">
             {free.map((m) => (
               <li key={m.slug} className="flex items-center gap-3 rounded-xl bg-white/[0.06] px-4 py-3">

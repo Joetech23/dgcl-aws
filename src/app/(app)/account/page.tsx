@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { changePassword, signOut, updateProfile, useAccount } from '@/lib/backend'
 import { findTrack } from '@/config/tracks'
+import { catalog, FREE_MODULES_TEXT } from '@/config/catalog'
+import { moduleName } from '@/lib/course/names'
 import { displayName } from '@/lib/people'
 import { Avatar } from '@/components/app/AppShell'
 import { EnquireButton } from '@/components/site/Enquiry'
@@ -13,7 +15,7 @@ import { formatCertDate } from '@/components/site/Certificate'
 import { IconAward, IconCheck } from '@/components/site/icons'
 
 export default function AccountPage() {
-  const { user, enrollment, points, streak, certificates } = useAccount()
+  const { user, enrollment, points, streak, certificates, purchased } = useAccount()
   const router = useRouter()
   const [saved, setSaved] = useState(false)
   if (!user) return null
@@ -67,7 +69,19 @@ export default function AccountPage() {
           </p>
         ) : (
           <>
-            <p className="mt-2 text-[14.5px] text-ink/70">Free: the Introduction and Modules 1 to 4.</p>
+            <p className="mt-2 text-[14.5px] text-ink/70">Free: the Introduction and {FREE_MODULES_TEXT}.</p>
+            {purchased.size ? (
+              <p className="mt-1.5 text-[14.5px] text-ink/70">
+                Bought:{' '}
+                <strong className="font-semibold text-ink">
+                  {catalog
+                    .filter((m) => purchased.has(m.slug))
+                    .map((m) => `${moduleName(m.number)} (${m.short})`)
+                    .join(', ')}
+                </strong>
+                .
+              </p>
+            ) : null}
             <EnquireButton className={buttonClass('primary', 'sm', 'mt-4')}>Talk to our team about the full course</EnquireButton>
           </>
         )}

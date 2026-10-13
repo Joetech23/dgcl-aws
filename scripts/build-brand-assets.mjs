@@ -1,5 +1,5 @@
 /**
- * Draws the FreeTechPath app icons and the social share card.
+ * Draws the Learn Tech Hub app icons and the social share card.
  *
  *   node scripts/build-brand-assets.mjs
  *
@@ -38,11 +38,11 @@ const og = `<html><head><style>
   <div class="ring" style="right:120px;bottom:-230px;width:420px;height:420px;border:52px solid rgba(255,192,0,.18)"></div>
   <div style="position:absolute;left:72px;top:64px;display:flex;align-items:center;gap:20px">
     <div style="position:relative;width:84px;height:84px;border-radius:20px;background:#0000BC">${mark(0)}</div>
-    <div style="font-size:46px;font-weight:800;letter-spacing:-0.02em">FreeTechPath</div>
+    <div style="font-size:46px;font-weight:800;letter-spacing:-0.02em">LearnTechHub</div>
   </div>
   <div style="position:absolute;left:72px;top:206px;width:900px">
     <div style="font-size:74px;font-weight:800;line-height:1.04;letter-spacing:-0.035em">Launch your tech career. <span style="color:#FFC000">Start free.</span></div>
-    <div style="margin-top:22px;font-size:27px;font-weight:600;color:rgba(255,255,255,.75)">Free narrated lessons and live classes from DGCL Digital Cloud Academy</div>
+    <div style="margin-top:22px;font-size:27px;font-weight:600;color:rgba(255,255,255,.75)">Narrated lessons and instructor-led training from DGCL Digital Cloud Academy</div>
   </div>
   <div style="position:absolute;left:72px;bottom:44px;width:1060px">${domains.map((d) => `<span class="chip">${d}</span>`).join('')}</div>
   <img src="${logo}" style="position:absolute;right:64px;top:56px;height:92px;filter:brightness(0) invert(1)">

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const supaKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!code || !supaUrl || !supaKey) return NextResponse.redirect(new URL('/login/', url.origin))
 
-  const store = cookies()
+  const store = await cookies()
   const supabase = createServerClient(supaUrl, supaKey, {
     cookies: {
       get: (name: string) => store.get(name)?.value,

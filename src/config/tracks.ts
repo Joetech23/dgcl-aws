@@ -1,7 +1,8 @@
 /**
- * The two ways to learn with DGCL. There are no public prices: a learner
- * picks a track, leaves their details, and DGCL's sales team calls them with
- * a price for their country. When they join, an admin sets their track and
+ * The two ways to learn the whole course with DGCL. A programme has no
+ * public price: a learner picks a track, leaves their details, and DGCL's
+ * team comes back with a price for their country. Instructor-led enquiries
+ * are confirmed by a consultation fee (see pricing.ts). When they join, an admin sets their track and
  * Modules 5 to 14 open.
  */
 
@@ -37,17 +38,16 @@ export const tracks: Track[] = [
   {
     id: 'instructor-led',
     name: 'Instructor-led',
-    tagline: 'Live classes with a DGCL instructor and your cohort.',
+    tagline: 'Live online classes with a DGCL instructor.',
     benefits: [
       'Live online classes with a DGCL instructor',
       'Everything in self-paced, included',
       'Hands-on labs and real projects',
-      'Recordings of every class',
       'Mentor Q&A and a career session',
       'For AWS Cloud, DevOps Tools, Cybersecurity and Ethical Hacking, and Healthcare Data Analysis, AI and Machine Learning',
     ],
     short: ['Live instructor classes', 'Self-paced lessons included', 'Labs and career support'],
-    cta: 'Ask about live classes',
+    cta: 'Book a consultation',
     badge: 'Most support',
   },
 ]

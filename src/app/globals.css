@@ -352,7 +352,7 @@ input[type='range'].scrub::-moz-range-thumb {
   mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 40%, transparent 100%);
 }
 
-/* ---- header mark: DGCL logo <-> FreeTechPath wordmark ----
+/* ---- header mark: DGCL logo <-> LearnTechHub wordmark ----
    One 10 second loop. Each face holds for about four seconds; a band of
    light crosses it, it dissolves, and the other takes its place. Both faces
    share one grid cell, so the header never changes size. */

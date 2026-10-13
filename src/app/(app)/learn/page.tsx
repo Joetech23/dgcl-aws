@@ -1,7 +1,7 @@
 'use client'
 
 import { useAccount } from '@/lib/backend'
-import { catalog, TOTAL_MODULES } from '@/config/catalog'
+import { catalog, MODULE_PRICE_TEXT, PROGRAMME_MODULES_TEXT, TOTAL_MODULES } from '@/config/catalog'
 import { moduleFraction, moduleState } from '@/lib/access'
 import { ModuleCard } from '@/components/app/ModuleCard'
 import { EnquireButton } from '@/components/site/Enquiry'
@@ -10,11 +10,12 @@ import { IconPlay } from '@/components/site/icons'
 
 /** Self-paced: every module of the AWS course as narrated lessons. */
 export default function SelfPaced() {
-  const { completed, enrollment } = useAccount()
+  const { completed, enrollment, purchased } = useAccount()
   const groups = [
     { title: 'Free: start anywhere', items: catalog.filter((m) => m.free) },
-    { title: enrollment ? 'Your programme' : `Modules 5 to ${TOTAL_MODULES}`, items: catalog.filter((m) => !m.free) },
-  ]
+    { title: enrollment ? 'Included in your programme' : `Buy one at a time, ${MODULE_PRICE_TEXT} each`, items: catalog.filter((m) => m.price !== null) },
+    { title: enrollment ? 'Your programme' : `${PROGRAMME_MODULES_TEXT}: with a programme`, items: catalog.filter((m) => !m.free && m.price === null) },
+  ].filter((g) => g.items.length)
   return (
     <div className="mx-auto max-w-[1180px]">
       <div className="flex flex-wrap items-end gap-4">
@@ -36,7 +37,7 @@ export default function SelfPaced() {
           <h2 className="font-display text-[16px] font-extrabold text-ink">{g.title}</h2>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {g.items.map((m) => (
-              <ModuleCard key={m.slug} m={m} state={moduleState(m, completed, enrollment)} fraction={moduleFraction(m, completed)} />
+              <ModuleCard key={m.slug} m={m} state={moduleState(m, completed, enrollment, purchased)} fraction={moduleFraction(m, completed)} />
             ))}
           </div>
         </section>

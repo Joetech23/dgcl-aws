@@ -4,17 +4,20 @@ import { Faq } from '@/components/site/Faq'
 import { TrustBadge } from '@/components/site/TrustBadge'
 import { Container, Eyebrow } from '@/components/site/ui'
 import { IconCheck, IconLock } from '@/components/site/icons'
+import { FREE_MODULES_TEXT, MODULE_PRICE_TEXT, PRICED_MODULES_TEXT, PROGRAMME_MODULES_TEXT } from '@/config/catalog'
+import { CONSULTATION_FEE_USD, money } from '@/config/pricing'
 
 export const metadata: Metadata = { title: 'Ways to learn: self-paced or instructor-led', alternates: { canonical: '/plans/' } }
 
 const ROWS: [string, boolean, boolean, boolean][] = [
-  ['Introduction and Modules 1 to 4', true, true, true],
-  ['Modules 5 to 14, animated and narrated', false, true, true],
+  [`Introduction and ${FREE_MODULES_TEXT}`, true, true, true],
+  [`${PRICED_MODULES_TEXT} (or ${MODULE_PRICE_TEXT} each on their own)`, false, true, true],
+  [`${PROGRAMME_MODULES_TEXT}, animated and narrated`, false, true, true],
   ['Quizzes and activities', true, true, true],
   ['DGCL certificate with verify link', false, true, true],
   ['Cloud Practitioner practice exams', false, true, true],
   ['Live classes with an instructor', false, false, true],
-  ['Hands-on labs and recordings', false, false, true],
+  ['Hands-on labs and real projects', false, false, true],
   ['Mentor Q&A and career session', false, false, true],
 ]
 
@@ -27,7 +30,7 @@ export default function PlansPage() {
             <Eyebrow>Ways to learn</Eyebrow>
             <h1 className="mt-2 font-display text-[clamp(2rem,4.6vw,3.2rem)] font-extrabold leading-[1.05] tracking-[-0.03em] text-ink">Choose how you learn</h1>
             <p className="mt-4 text-[16.5px] leading-relaxed text-ink/60">
-              The Introduction and Modules 1 to 4 are free for everyone. For the rest, pick a way to learn and leave your details: a DGCL adviser will call you with the price for your country.
+              The Introduction and {FREE_MODULES_TEXT} are free for everyone, and {PRICED_MODULES_TEXT} are {MODULE_PRICE_TEXT} each. For the whole course, or to learn with an instructor, pick a way to learn below. Instructor-led training starts with a {money(CONSULTATION_FEE_USD)} one-to-one consultation.
             </p>
           </div>
           <div className="mt-14">

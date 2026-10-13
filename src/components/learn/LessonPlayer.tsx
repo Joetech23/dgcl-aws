@@ -9,7 +9,8 @@ import { CaptionBand } from '@/components/player/CaptionBand'
 import { Transport } from '@/components/player/Transport'
 import { GateDock } from '@/components/player/CoursePlayer'
 import { getProgressStore } from '@/lib/progress'
-import { notifyProgress } from '@/lib/backend'
+import { authHeader, lessonMediaUrl, notifyProgress } from '@/lib/backend'
+import { PAID_MODULES } from '@/config/pricing'
 import { IconPlay } from '@/components/site/icons'
 import { moduleBadge, moduleName, sectionLabel } from '@/lib/course/names'
 
@@ -49,19 +50,46 @@ export function LessonPlayer({
   const completedRef = useRef(completed)
   completedRef.current = completed
 
+  // A paid module's narration is not a public file: it is fetched from the
+  // server with the learner's token (see src/app/media), and the server
+  // checks they have bought it. Free modules load straight from /audio.
+  const gated = Boolean(PAID_MODULES[mod.id])
+  const [gatedSrc, setGatedSrc] = useState<Record<string, string>>({})
+  const [mediaError, setMediaError] = useState(false)
+
   useEffect(() => {
     let cancelled = false
     if (timings[slide.id]) return
-    fetch(`/audio/${slide.id}.json`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: SlideTiming | null) => {
-        if (!cancelled && data) setTimings((t) => ({ ...t, [slide.id]: data }))
-      })
-      .catch(() => {})
+    setMediaError(false)
+    if (!gated) {
+      fetch(`/audio/${slide.id}.json`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data: SlideTiming | null) => {
+          if (!cancelled && data) setTimings((t) => ({ ...t, [slide.id]: data }))
+        })
+        .catch(() => {})
+    } else {
+      // Sound and timings arrive together, so the lesson never starts silent.
+      void (async () => {
+        try {
+          const [src, res] = await Promise.all([
+            lessonMediaUrl(`${slide.id}.mp3`),
+            fetch(`/media/audio/${slide.id}.json`, { headers: await authHeader(), cache: 'no-store' }),
+          ])
+          const data = res.ok ? ((await res.json()) as SlideTiming) : null
+          if (cancelled) return
+          if (!src || !data) return setMediaError(true)
+          setGatedSrc((g) => ({ ...g, [slide.id]: src }))
+          setTimings((t) => ({ ...t, [slide.id]: data }))
+        } catch {
+          if (!cancelled) setMediaError(true)
+        }
+      })()
+    }
     return () => {
       cancelled = true
     }
-  }, [slide.id, timings])
+  }, [slide.id, timings, gated])
 
   /* ---------- the gate ---------- */
 
@@ -87,7 +115,7 @@ export function LessonPlayer({
   }, [slide.id])
 
   const timeline = useTimeline({
-    src: `/audio/${slide.id}.mp3`,
+    src: gated ? (gatedSrc[slide.id] ?? '') : `/audio/${slide.id}.mp3`,
     timing,
     gateLine,
     gateSatisfied: gateDone || gateLine < 0,
@@ -172,12 +200,19 @@ export function LessonPlayer({
           />
         </ScaledStage>
 
+        {mediaError ? (
+          <p role="alert" className="absolute inset-x-4 top-4 z-10 rounded-xl bg-white px-4 py-3 text-center font-display text-[13.5px] font-bold text-[#A8262B] shadow-stage">
+            This lesson could not be loaded. Check your connection and refresh the page. If you have just paid, log out and log in again.
+          </p>
+        ) : null}
         {!started ? (
           <button
             type="button"
             onClick={() => {
               setStarted(true)
-              setTimeout(() => play(), 60)
+              // Paid narration may still be arriving: play as soon as it does.
+              if (!timing) autoplayRef.current = true
+              else setTimeout(() => play(), 60)
             }}
             className="group absolute inset-2 grid place-items-center bg-gradient-to-t from-[#000728]/45 via-[#000728]/10 to-transparent transition hover:from-[#000728]/35 sm:inset-3"
             aria-label={`Play lesson ${index + 1}: ${slide.navLabel}`}

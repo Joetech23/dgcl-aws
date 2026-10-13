@@ -4,6 +4,7 @@ import { CertificateView } from '@/components/site/CertificateView'
 export const metadata: Metadata = { title: 'Verify a certificate' }
 
 /** Public: anyone with a certificate's ID can check it here. */
-export default function VerifyPage({ params }: { params: { code: string } }) {
-  return <CertificateView code={decodeURIComponent(params.code)} />
+export default async function VerifyPage({ params }: { params: Promise<{ code: string }> }) {
+  const { code } = await params
+  return <CertificateView code={decodeURIComponent(code)} />
 }
