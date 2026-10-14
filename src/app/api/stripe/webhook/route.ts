@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic'
 const EVENTS = new Set(['checkout.session.completed', 'checkout.session.async_payment_succeeded'])
 
 export async function POST(req: NextRequest) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET
+  const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim()
   if (!secret) return NextResponse.json({ error: 'not-configured' }, { status: 503 })
 
   // The signature covers the exact bytes Stripe sent, so read the body as text.

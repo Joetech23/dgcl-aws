@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { sendResetCode, useAccount } from '@/lib/backend'
+import { checkPayments, sendResetCode, useAccount, type PaymentHealth } from '@/lib/backend'
 import {
   grantModule,
   createPartner,
@@ -170,6 +170,7 @@ function Overview({ data, go }: { data: AdminData; go: (t: Tab) => void }) {
       <Card>
         <h2 className="font-display text-[16px] font-extrabold text-ink">Paid online</h2>
         <p className="mt-1 text-[13px] text-ink/50">Payments confirmed by Stripe, in US dollars. Stripe&apos;s own dashboard has the full record, fees and refunds.</p>
+        <PaymentSetup />
         <dl className="mt-4 grid gap-3 sm:grid-cols-3">
           {[
             ['Modules sold', String(data.sales.modules), money(data.sales.moduleRevenue)],
@@ -811,5 +812,55 @@ function Certificates({ data }: { data: AdminData }) {
       </ul>
       {!data.certificates.length ? <p className="p-8 text-center text-[14px] text-ink/50">No certificates yet.</p> : null}
     </Card>
+  )
+}
+
+const CHECK_LABEL: Record<string, string> = {
+  stripeKey: 'Stripe secret key',
+  checkout: 'Payment page',
+  webhook: 'Stripe webhook',
+  database: 'Database',
+}
+
+/** Runs the server's payment set-up check and says, in plain words, what to fix. */
+function PaymentSetup() {
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState<PaymentHealth | null>(null)
+  return (
+    <div className="mt-4 rounded-2xl bg-slate/60 p-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="min-w-0 flex-1 text-[13.5px] text-ink/70">Learners see &ldquo;payment page could not be opened&rdquo; or &ldquo;not switched on yet&rdquo;? Check the set-up.</p>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true)
+            setResult(await checkPayments())
+            setBusy(false)
+          }}
+          className={buttonClass('secondary', 'sm')}
+        >
+          {busy ? 'Checking…' : 'Check payment set-up'}
+        </button>
+      </div>
+      {result ? (
+        'checks' in result ? (
+          <ul className="mt-3 space-y-2">
+            {Object.entries(result.checks).map(([k, c]) => (
+              <li key={k} className="flex gap-2.5 text-[13.5px] leading-snug">
+                <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white ${c.ok ? 'bg-mint' : 'bg-rose'}`}>{c.ok ? '✓' : '!'}</span>
+                <span className="min-w-0">
+                  <strong className="font-semibold text-ink">{CHECK_LABEL[k] ?? k}:</strong> <span className="text-ink/70">{c.detail}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p role="alert" className="mt-3 text-[13.5px] text-rose">
+            {result.error}
+          </p>
+        )
+      ) : null}
+    </div>
   )
 }

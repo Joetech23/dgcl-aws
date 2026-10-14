@@ -13,7 +13,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 
 const API = 'https://api.stripe.com/v1'
 
-export const stripeConfigured = () => Boolean(process.env.STRIPE_SECRET_KEY)
+export const stripeConfigured = () => Boolean(process.env.STRIPE_SECRET_KEY?.trim())
 
 export type CheckoutSession = {
   id: string
@@ -41,7 +41,8 @@ export function encodeForm(input: Record<string, unknown>, prefix = ''): string[
 }
 
 async function call<T>(method: 'GET' | 'POST', path: string, body?: Record<string, unknown>): Promise<T> {
-  const key = process.env.STRIPE_SECRET_KEY
+  // Trimmed: a space or line break pasted with the key makes every call fail.
+  const key = process.env.STRIPE_SECRET_KEY?.trim()
   if (!key) throw new Error('Stripe is not configured')
   const res = await fetch(`${API}${path}`, {
     method,

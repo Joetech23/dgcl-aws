@@ -407,6 +407,22 @@ export async function confirmCheckout(sessionId: string): Promise<Confirmed> {
   }
 }
 
+export type PaymentCheck = { ok: boolean; detail: string }
+export type PaymentHealth = { ok: boolean; checks: Record<string, PaymentCheck> } | { ok: false; error: string }
+
+/** Admin panel: ask the server whether online payment is set up, and why not. */
+export async function checkPayments(): Promise<PaymentHealth> {
+  if (!SUPABASE_ON) return { ok: false, error: 'Preview mode: there is no server set-up to check.' }
+  try {
+    const res = await fetch('/api/payments/health/', { headers: await authHeader(), cache: 'no-store' })
+    if (res.status === 401 || res.status === 403) return { ok: false, error: 'Only admins can run this check. Log in again if you are one.' }
+    if (!res.ok) return { ok: false, error: `The check could not run (${res.status}).` }
+    return (await res.json()) as PaymentHealth
+  } catch {
+    return { ok: false, error: 'The check could not reach the server.' }
+  }
+}
+
 /* ---------- narration for paid modules ---------- */
 
 const mediaCache = new Map<string, string>()
