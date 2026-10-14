@@ -79,8 +79,27 @@ jobs:
           protocol: ftps
           local-dir: ./dist/cpanel/
           server-dir: ./
+          # The action remembers what it uploaded in this file on the server
+          # and sends only differences. Renamed once (14 Oct 2026) so the next
+          # run sends every file again: the 2de4f73 deploy left two new code
+          # files missing on the server.
+          state-name: .ftp-deploy-sync-state-v2.json
           # The action skips node_modules by default; the site needs its own
           # (site/node_modules), so only git files are excluded here.
+          # tmp/restart.txt is left out here and sent last, below: the app
+          # restarts as soon as that file changes, and Next.js lists its
+          # static files once at start-up. Restarting halfway through the
+          # upload made it start without the newest page code (404s).
           exclude: |
             **/.git*
             **/.git*/**
+            tmp/restart.txt
+            **/tmp/restart.txt
+
+      # Only now, with every file in place, restart the app.
+      - name: Restart the app
+        run: |
+          # -k: the host's FTP certificate is for its own server name, not
+          # ours; the connection is still encrypted (as in the step above).
+          curl --silent --show-error --fail --ssl-reqd -k --ftp-create-dirs --user "$FTP_USERNAME:$FTP_PASSWORD" -T dist/cpanel/tmp/restart.txt "ftp://$FTP_SERVER/tmp/restart.txt"
+          echo "Restart requested."
